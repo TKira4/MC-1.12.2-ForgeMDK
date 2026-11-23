@@ -1,0 +1,14 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "undyingarcana:items/enchant_scroll"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "undyingarcana:cursed": 1
+      },
+      "model": "undyingarcana:item/enchant_scroll_cursed"
+    }
+  ]
+}

@@ -1,0 +1,921 @@
+{
+ "quests": [
+  {
+   "id": "story_first_night",
+   "tab": "story",
+   "title": "The First Night",
+   "story": "The dead walk. Thin their numbers before they find your door.",
+   "icon": "minecraft:wooden_sword",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie",
+     "count": 10
+    }
+   ],
+   "xp": 60,
+   "items": [
+    "undyingarcana:soul_coin*6",
+    "minecraft:bread*8",
+    "minecraft:torch*16"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "story_iron_door",
+   "tab": "story",
+   "title": "Iron Holds",
+   "story": "Zombies chew through wood and glass. Iron and stone stop most of them.",
+   "icon": "minecraft:iron_door",
+   "requires": [
+    "story_first_night"
+   ],
+   "goals": [
+    {
+     "type": "craft",
+     "target": "minecraft:iron_door",
+     "count": 1
+    }
+   ],
+   "xp": 80,
+   "items": [
+    "undyingarcana:soul_coin*8",
+    "minecraft:iron_ingot*4"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "story_level5",
+   "tab": "story",
+   "title": "Getting Stronger",
+   "story": "Every kill makes you stronger. Press K to spend your stat points.",
+   "icon": "minecraft:experience_bottle",
+   "requires": [
+    "story_iron_door"
+   ],
+   "goals": [
+    {
+     "type": "level",
+     "target": "",
+     "count": 5
+    }
+   ],
+   "xp": 60,
+   "items": [
+    "undyingarcana:soul_coin*6",
+    "minecraft:cooked_beef*8"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "story_screamer",
+   "tab": "story",
+   "title": "Silence the Screamer",
+   "story": "Its shriek calls every zombie within 32 blocks. Kill it first.",
+   "icon": "minecraft:skull@2",
+   "requires": [
+    "story_level5"
+   ],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie:screamer",
+     "count": 1
+    }
+   ],
+   "xp": 100,
+   "items": [
+    "undyingarcana:soul_coin*10",
+    "minecraft:arrow*32"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "story_build",
+   "tab": "story",
+   "title": "A Path of Your Own",
+   "story": "At level 16 your stat split becomes a build. Changing it later costs a Scroll of Rebirth, so choose well.",
+   "icon": "undyingarcana:scroll_rebirth",
+   "requires": [
+    "story_level5"
+   ],
+   "goals": [
+    {
+     "type": "build",
+     "target": "any",
+     "count": 1
+    }
+   ],
+   "xp": 200,
+   "items": [
+    "undyingarcana:soul_coin*20",
+    "undyingarcana:relic_shard*3"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "story_bloodmoon",
+   "tab": "story",
+   "title": "Red Night",
+   "story": "Every eighth night the moon turns red and the dead come in hordes. Live until dawn.",
+   "icon": "minecraft:redstone",
+   "requires": [
+    "story_build"
+   ],
+   "goals": [
+    {
+     "type": "bloodmoon",
+     "target": "",
+     "count": 1
+    }
+   ],
+   "xp": 300,
+   "items": [
+    "undyingarcana:soul_coin*30",
+    "undyingarcana:scroll_rebirth*1",
+    "minecraft:golden_apple*2"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "story_elites",
+   "tab": "story",
+   "title": "Marked Ones",
+   "story": "Gold-named zombies carry gifts: Swift, Vampiric, Bomber and worse.",
+   "icon": "minecraft:gold_ingot",
+   "requires": [
+    "story_bloodmoon"
+   ],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "elite",
+     "count": 5
+    }
+   ],
+   "xp": 250,
+   "items": [
+    "undyingarcana:soul_coin*25",
+    "undyingarcana:relic_shard*5"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "story_boss",
+   "tab": "story",
+   "title": "Bigger Than the Rest",
+   "story": "Old powers wait out there: a brute in the Nether, a lich in the cold, a warden in the hills. Find one and end it.",
+   "icon": "undyingarcana:mythic_core",
+   "requires": [
+    "story_elites"
+   ],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "boss",
+     "count": 1
+    }
+   ],
+   "xp": 600,
+   "items": [
+    "undyingarcana:soul_coin*60",
+    "undyingarcana:mythic_core*1"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "story_level50",
+   "tab": "story",
+   "title": "Undying",
+   "story": "Half way to legend. The dead have learned your name.",
+   "icon": "minecraft:nether_star",
+   "requires": [
+    "story_boss"
+   ],
+   "goals": [
+    {
+     "type": "level",
+     "target": "",
+     "count": 50
+    }
+   ],
+   "xp": 0,
+   "items": [
+    "undyingarcana:soul_coin*5",
+    "undyingarcana:relic_shard*10",
+    "minecraft:diamond*5"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "trial_1",
+   "tab": "trials",
+   "title": "Awakening Trial I",
+   "story": "Prove your build. Awakenings arrive in a later update; finishing this now keeps your place.",
+   "icon": "minecraft:enchanted_book",
+   "requires": [
+    "story_build"
+   ],
+   "goals": [
+    {
+     "type": "level",
+     "target": "",
+     "count": 50
+    },
+    {
+     "type": "kill",
+     "target": "elite",
+     "count": 10
+    },
+    {
+     "type": "kill",
+     "target": "boss",
+     "count": 1
+    },
+    {
+     "type": "build",
+     "target": "any",
+     "count": 1
+    }
+   ],
+   "xp": 500,
+   "items": [
+    "undyingarcana:soul_coin*50",
+    "undyingarcana:relic_shard*10"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "trial_2",
+   "tab": "trials",
+   "title": "Awakening Trial II",
+   "story": "The second awakening asks for more than strength.",
+   "icon": "minecraft:nether_star",
+   "requires": [
+    "trial_1"
+   ],
+   "goals": [
+    {
+     "type": "level",
+     "target": "",
+     "count": 90
+    },
+    {
+     "type": "kill",
+     "target": "boss",
+     "count": 3
+    },
+    {
+     "type": "bloodmoon",
+     "target": "",
+     "count": 3
+    }
+   ],
+   "xp": 1500,
+   "items": [
+    "undyingarcana:soul_coin*150",
+    "undyingarcana:mythic_core*2"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "m_blade",
+   "tab": "mastery",
+   "title": "Blade Work",
+   "story": "Steel does not run out of ammo.",
+   "icon": "minecraft:iron_sword",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie",
+     "count": 40,
+     "with": "melee"
+    }
+   ],
+   "xp": 120,
+   "items": [
+    "undyingarcana:soul_coin*12",
+    "minecraft:iron_ingot*6"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "m_bow",
+   "tab": "mastery",
+   "title": "Steady Aim",
+   "story": "Drop them before they reach you.",
+   "icon": "minecraft:bow",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie",
+     "count": 40,
+     "with": "bow"
+    }
+   ],
+   "xp": 120,
+   "items": [
+    "undyingarcana:soul_coin*12",
+    "minecraft:arrow*64"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "m_gunsmith",
+   "tab": "mastery",
+   "title": "Gunsmith",
+   "story": "A pistol and a pocket of bullets. Loud, so mind the horde.",
+   "icon": "undyingarcana:gun_pistol",
+   "requires": [],
+   "goals": [
+    {
+     "type": "craft",
+     "target": "undyingarcana:gun_pistol",
+     "count": 1
+    },
+    {
+     "type": "craft",
+     "target": "undyingarcana:ammo_bullet",
+     "count": 16
+    }
+   ],
+   "xp": 100,
+   "items": [
+    "undyingarcana:soul_coin*10",
+    "undyingarcana:ammo_bullet*32"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "m_gun",
+   "tab": "mastery",
+   "title": "Lead and Smoke",
+   "story": "Every shot is heard. Make every shot count.",
+   "icon": "undyingarcana:gun_shotgun",
+   "requires": [
+    "m_gunsmith"
+   ],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie",
+     "count": 40,
+     "with": "gun"
+    }
+   ],
+   "xp": 150,
+   "items": [
+    "undyingarcana:soul_coin*15",
+    "undyingarcana:ammo_shell*16"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "m_wand",
+   "tab": "mastery",
+   "title": "Spellcaster",
+   "story": "Your magic, your rules.",
+   "icon": "minecraft:blaze_rod",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie",
+     "count": 40,
+     "with": "wand"
+    }
+   ],
+   "xp": 120,
+   "items": [
+    "undyingarcana:soul_coin*12",
+    "minecraft:lapis_lazuli*16"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "m_fist",
+   "tab": "mastery",
+   "title": "Bare Knuckles",
+   "story": "Strength builds hit hardest with empty hands.",
+   "icon": "minecraft:leather",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie",
+     "count": 20,
+     "with": "unarmed"
+    }
+   ],
+   "xp": 120,
+   "items": [
+    "undyingarcana:soul_coin*12",
+    "minecraft:cooked_beef*16"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "m_legend",
+   "tab": "mastery",
+   "title": "Legend Forged",
+   "story": "Bring a blueprint and a Mythic Core to the Relic Altar.",
+   "icon": "undyingarcana:relic_altar",
+   "requires": [],
+   "goals": [
+    {
+     "type": "item",
+     "target": "undyingarcana:legend_*",
+     "count": 1,
+     "text": "Own a legendary weapon"
+    }
+   ],
+   "xp": 500,
+   "items": [
+    "undyingarcana:soul_coin*50",
+    "undyingarcana:relic_shard*8"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "h_walker",
+   "tab": "hunts",
+   "title": "Hunt: Walkers",
+   "story": "Slow, but never alone.",
+   "icon": "minecraft:rotten_flesh",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie:walker",
+     "count": 50
+    }
+   ],
+   "xp": 100,
+   "items": [
+    "undyingarcana:soul_coin*10"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "h_runner",
+   "tab": "hunts",
+   "title": "Hunt: Runners",
+   "story": "They climb, they leap, they flank.",
+   "icon": "minecraft:rotten_flesh",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie:runner",
+     "count": 30
+    }
+   ],
+   "xp": 120,
+   "items": [
+    "undyingarcana:soul_coin*12"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "h_crawler",
+   "tab": "hunts",
+   "title": "Hunt: Crawlers",
+   "story": "Check under every gap.",
+   "icon": "minecraft:rotten_flesh",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie:crawler",
+     "count": 20
+    }
+   ],
+   "xp": 120,
+   "items": [
+    "undyingarcana:soul_coin*12"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "h_brute",
+   "tab": "hunts",
+   "title": "Hunt: Brutes",
+   "story": "Keep your distance; they break stone.",
+   "icon": "minecraft:rotten_flesh",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie:brute",
+     "count": 10
+    }
+   ],
+   "xp": 250,
+   "items": [
+    "undyingarcana:soul_coin*25",
+    "undyingarcana:relic_shard*2"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "h_screamer",
+   "tab": "hunts",
+   "title": "Hunt: Screamers",
+   "story": "Kill them before they call for help.",
+   "icon": "minecraft:rotten_flesh",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie:screamer",
+     "count": 10
+    }
+   ],
+   "xp": 150,
+   "items": [
+    "undyingarcana:soul_coin*15"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "h_spitter",
+   "tab": "hunts",
+   "title": "Hunt: Spitters",
+   "story": "Acid eats armor. Close in fast.",
+   "icon": "minecraft:rotten_flesh",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie:spitter",
+     "count": 20
+    }
+   ],
+   "xp": 150,
+   "items": [
+    "undyingarcana:soul_coin*15"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "h_bloater",
+   "tab": "hunts",
+   "title": "Hunt: Bloaters",
+   "story": "Shoot them from afar, or step back when they swell.",
+   "icon": "minecraft:rotten_flesh",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie:bloater",
+     "count": 15
+    }
+   ],
+   "xp": 150,
+   "items": [
+    "undyingarcana:soul_coin*15"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "h_armored",
+   "tab": "hunts",
+   "title": "Hunt: Armored",
+   "story": "Shields stop bullets from the front. Flank them or pierce the armor.",
+   "icon": "minecraft:rotten_flesh",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie:armored",
+     "count": 15
+    }
+   ],
+   "xp": 200,
+   "items": [
+    "undyingarcana:soul_coin*20",
+    "undyingarcana:relic_shard*2"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "h_necromancer",
+   "tab": "hunts",
+   "title": "Hunt: Necromancers",
+   "story": "Spells slide off them. Steel does not.",
+   "icon": "minecraft:rotten_flesh",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie:necromancer",
+     "count": 5
+    }
+   ],
+   "xp": 300,
+   "items": [
+    "undyingarcana:soul_coin*30",
+    "undyingarcana:relic_shard*3"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "h_elite",
+   "tab": "hunts",
+   "title": "Hunt: Elites",
+   "story": "Every gold name you put down makes the next night easier.",
+   "icon": "minecraft:gold_ingot",
+   "requires": [
+    "story_elites"
+   ],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "elite",
+     "count": 25
+    }
+   ],
+   "xp": 400,
+   "items": [
+    "undyingarcana:soul_coin*40",
+    "undyingarcana:relic_shard*5"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "x_desert",
+   "tab": "exploration",
+   "title": "Explore: Desert",
+   "story": "Map the world before the dead take it.",
+   "icon": "minecraft:sand",
+   "requires": [],
+   "goals": [
+    {
+     "type": "biome",
+     "target": "desert",
+     "count": 1,
+     "text": "Visit a desert biome"
+    }
+   ],
+   "xp": 60,
+   "items": [
+    "undyingarcana:soul_coin*6"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "x_ice",
+   "tab": "exploration",
+   "title": "Explore: Frozen",
+   "story": "Map the world before the dead take it.",
+   "icon": "minecraft:ice",
+   "requires": [],
+   "goals": [
+    {
+     "type": "biome",
+     "target": "ice",
+     "count": 1,
+     "text": "Visit a frozen biome"
+    }
+   ],
+   "xp": 60,
+   "items": [
+    "undyingarcana:soul_coin*6"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "x_swamp",
+   "tab": "exploration",
+   "title": "Explore: Swamp",
+   "story": "Map the world before the dead take it.",
+   "icon": "minecraft:vine",
+   "requires": [],
+   "goals": [
+    {
+     "type": "biome",
+     "target": "swamp",
+     "count": 1,
+     "text": "Visit a swamp biome"
+    }
+   ],
+   "xp": 60,
+   "items": [
+    "undyingarcana:soul_coin*6"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "x_jungle",
+   "tab": "exploration",
+   "title": "Explore: Jungle",
+   "story": "Map the world before the dead take it.",
+   "icon": "minecraft:melon",
+   "requires": [],
+   "goals": [
+    {
+     "type": "biome",
+     "target": "jungle",
+     "count": 1,
+     "text": "Visit a jungle biome"
+    }
+   ],
+   "xp": 60,
+   "items": [
+    "undyingarcana:soul_coin*6"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "x_mesa",
+   "tab": "exploration",
+   "title": "Explore: Mesa",
+   "story": "Map the world before the dead take it.",
+   "icon": "minecraft:hardened_clay",
+   "requires": [],
+   "goals": [
+    {
+     "type": "biome",
+     "target": "mesa",
+     "count": 1,
+     "text": "Visit a mesa biome"
+    }
+   ],
+   "xp": 80,
+   "items": [
+    "undyingarcana:soul_coin*8"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "x_extreme_hills",
+   "tab": "exploration",
+   "title": "Explore: Mountain",
+   "story": "Map the world before the dead take it.",
+   "icon": "minecraft:stone",
+   "requires": [],
+   "goals": [
+    {
+     "type": "biome",
+     "target": "extreme_hills",
+     "count": 1,
+     "text": "Visit a mountain biome"
+    }
+   ],
+   "xp": 60,
+   "items": [
+    "undyingarcana:soul_coin*6"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "x_mushroom",
+   "tab": "exploration",
+   "title": "Explore: Mushroom island",
+   "story": "Map the world before the dead take it.",
+   "icon": "minecraft:red_mushroom",
+   "requires": [],
+   "goals": [
+    {
+     "type": "biome",
+     "target": "mushroom",
+     "count": 1,
+     "text": "Visit a mushroom island biome"
+    }
+   ],
+   "xp": 150,
+   "items": [
+    "undyingarcana:soul_coin*15"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "x_ocean",
+   "tab": "exploration",
+   "title": "Explore: Ocean",
+   "story": "Map the world before the dead take it.",
+   "icon": "minecraft:boat",
+   "requires": [],
+   "goals": [
+    {
+     "type": "biome",
+     "target": "ocean",
+     "count": 1,
+     "text": "Visit a ocean biome"
+    }
+   ],
+   "xp": 40,
+   "items": [
+    "undyingarcana:soul_coin*5"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "x_hell",
+   "tab": "exploration",
+   "title": "Explore: Nether",
+   "story": "Map the world before the dead take it.",
+   "icon": "minecraft:netherrack",
+   "requires": [],
+   "goals": [
+    {
+     "type": "biome",
+     "target": "hell",
+     "count": 1,
+     "text": "Visit a Nether biome"
+    }
+   ],
+   "xp": 150,
+   "items": [
+    "undyingarcana:soul_coin*15"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "x_sky",
+   "tab": "exploration",
+   "title": "Explore: End",
+   "story": "Map the world before the dead take it.",
+   "icon": "minecraft:end_stone",
+   "requires": [],
+   "goals": [
+    {
+     "type": "biome",
+     "target": "sky",
+     "count": 1,
+     "text": "Visit a End biome"
+    }
+   ],
+   "xp": 300,
+   "items": [
+    "undyingarcana:soul_coin*30"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "d_cull",
+   "tab": "daily",
+   "title": "Daily: Cull",
+   "story": "Thin the horde before nightfall.",
+   "icon": "minecraft:iron_sword",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie",
+     "count": 30
+    }
+   ],
+   "xp": 120,
+   "items": [
+    "undyingarcana:soul_coin*12",
+    "minecraft:bread*6"
+   ],
+   "repeat": "daily"
+  },
+  {
+   "id": "d_runners",
+   "tab": "daily",
+   "title": "Daily: Fast Ones",
+   "story": "Runners scout for the horde. Blind it.",
+   "icon": "minecraft:feather",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "zombie:runner",
+     "count": 10
+    }
+   ],
+   "xp": 80,
+   "items": [
+    "undyingarcana:soul_coin*8"
+   ],
+   "repeat": "daily"
+  },
+  {
+   "id": "d_elite",
+   "tab": "daily",
+   "title": "Daily: Marked",
+   "story": "Find two gold names and put them down.",
+   "icon": "minecraft:gold_nugget",
+   "requires": [],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "elite",
+     "count": 2
+    }
+   ],
+   "xp": 150,
+   "items": [
+    "undyingarcana:soul_coin*15",
+    "undyingarcana:relic_shard*1"
+   ],
+   "repeat": "daily"
+  }
+ ]
+}

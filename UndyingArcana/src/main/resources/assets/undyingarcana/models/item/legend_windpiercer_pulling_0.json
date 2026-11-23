@@ -1,0 +1,6 @@
+{
+  "parent": "undyingarcana:item/legend_windpiercer",
+  "textures": {
+    "layer0": "undyingarcana:items/legend_windpiercer_pulling_0"
+  }
+}

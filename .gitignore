@@ -20,3 +20,6 @@ build
 # other
 eclipse
 run
+UndyingArcana/_sync/
+UndyingArcana/_backup_removed/
+_backup_*/

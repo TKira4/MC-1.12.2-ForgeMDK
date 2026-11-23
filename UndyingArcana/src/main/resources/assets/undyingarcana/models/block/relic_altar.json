@@ -1,0 +1,8 @@
+{
+  "parent": "block/cube_bottom_top",
+  "textures": {
+    "top": "undyingarcana:blocks/relic_altar_top",
+    "side": "undyingarcana:blocks/relic_altar_side",
+    "bottom": "undyingarcana:blocks/relic_altar_bottom"
+  }
+}

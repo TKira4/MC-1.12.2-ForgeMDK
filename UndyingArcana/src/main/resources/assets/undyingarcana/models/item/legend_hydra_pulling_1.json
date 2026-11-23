@@ -1,0 +1,6 @@
+{
+  "parent": "undyingarcana:item/legend_hydra",
+  "textures": {
+    "layer0": "undyingarcana:items/legend_hydra_pulling_1"
+  }
+}

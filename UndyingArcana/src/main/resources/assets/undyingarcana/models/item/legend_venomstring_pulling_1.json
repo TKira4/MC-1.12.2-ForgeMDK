@@ -1,0 +1,6 @@
+{
+  "parent": "undyingarcana:item/legend_venomstring",
+  "textures": {
+    "layer0": "undyingarcana:items/legend_venomstring_pulling_1"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "spartanweaponry:item/rapier_wood",
+  "textures": {
+    "layer0": "undyingarcana:items/legend_frostfang"
+  }
+}

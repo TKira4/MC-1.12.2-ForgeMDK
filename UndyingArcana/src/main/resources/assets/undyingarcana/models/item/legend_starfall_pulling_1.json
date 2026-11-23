@@ -1,0 +1,6 @@
+{
+  "parent": "undyingarcana:item/legend_starfall",
+  "textures": {
+    "layer0": "undyingarcana:items/legend_starfall_pulling_1"
+  }
+}

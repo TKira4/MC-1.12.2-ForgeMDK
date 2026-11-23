@@ -1,0 +1,14 @@
+{
+ "parent": "item/generated",
+ "textures": {
+  "layer0": "undyingarcana:items/waterskin"
+ },
+ "overrides": [
+  {
+   "predicate": {
+    "undyingarcana:full": 1
+   },
+   "model": "undyingarcana:item/waterskin_full"
+  }
+ ]
+}

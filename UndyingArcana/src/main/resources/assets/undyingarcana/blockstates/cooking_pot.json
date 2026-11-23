@@ -1,0 +1,10 @@
+{
+ "variants": {
+  "filled=false": {
+   "model": "undyingarcana:cooking_pot"
+  },
+  "filled=true": {
+   "model": "undyingarcana:cooking_pot_filled"
+  }
+ }
+}

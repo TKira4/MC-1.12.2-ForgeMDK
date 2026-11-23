@@ -1,0 +1,8 @@
+{
+  "parent": "block/cube_bottom_top",
+  "textures": {
+    "top": "undyingarcana:blocks/soul_exchange_top",
+    "side": "undyingarcana:blocks/soul_exchange_side",
+    "bottom": "undyingarcana:blocks/soul_exchange_bottom"
+  }
+}

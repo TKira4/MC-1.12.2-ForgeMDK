@@ -1,0 +1,14 @@
+{
+ "parent": "item/generated",
+ "textures": {
+  "layer0": "undyingarcana:items/iron_canteen"
+ },
+ "overrides": [
+  {
+   "predicate": {
+    "undyingarcana:full": 1
+   },
+   "model": "undyingarcana:item/iron_canteen_full"
+  }
+ ]
+}

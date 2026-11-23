@@ -1,0 +1,18 @@
+[
+  {
+    "modid": "undyingarcana",
+    "name": "Undying Arcana",
+    "description": "Undying Arcana: zombie apocalypse with Arcane Odyssey style builds, magic, weapon skills, jewels and an undead horde. Made for the Zombie Angry pack.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "",
+    "updateUrl": "",
+    "authorList": [
+      "IMBA"
+    ],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]
