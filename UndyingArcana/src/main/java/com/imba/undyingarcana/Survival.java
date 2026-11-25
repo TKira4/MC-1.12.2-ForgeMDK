@@ -257,6 +257,7 @@ public final class Survival {
         if (d.getInteger("cool") > 0 && t > NEUTRAL) {
             t = Math.max(NEUTRAL, t - 6F);
         }
+        t = Relics.temperature(p, t, NEUTRAL);
         if (p.isPotionActive(MobEffects.FIRE_RESISTANCE) && t > NEUTRAL) {
             t = NEUTRAL + (t - NEUTRAL) * 0.2F;
         }
@@ -342,7 +343,8 @@ public final class Survival {
             if (d.getInteger("sick") > 0) {
                 x *= 2F;
             }
-            x *= (1F - Math.min(0.3F, Stats.stats(p)[Builds.VIT] * 0.006F)) * Food.thirstMul(p);
+            x *= (1F - Math.min(0.3F, Stats.stats(p)[Builds.VIT] * 0.006F)) * Food.thirstMul(p)
+                    * (Relics.has(p, Relics.WATERSKIN_BELT) ? 0.7F : 1F);
             float tx = d.getFloat("tx") + x;
             while (tx >= 4F) {
                 tx -= 4F;

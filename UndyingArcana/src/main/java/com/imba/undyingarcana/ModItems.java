@@ -60,7 +60,7 @@ public final class ModItems {
     }
 
 
-    public static Block RELIC_ALTAR, JEWELER, EXCHANGE;
+    public static Block RELIC_ALTAR, JEWELER, EXCHANGE, SHRINE;
     public static Item FROST_ARROW, STORM_ARROW, BLAST_ARROW, MYTHIC_CORE, RELIC_SHARD, SOUL_COIN;
     public static Item AMMO_BULLET, AMMO_SHELL, AMMO_BALL;
     private static final List<ItemArmor.ArmorMaterial> MYTHIC_MATS = new ArrayList<>();
@@ -95,6 +95,11 @@ public final class ModItems {
         EXCHANGE.setUnlocalizedName(UndyingArcana.MODID + ".soul_exchange");
         EXCHANGE.setCreativeTab(UndyingArcana.TAB);
         event.getRegistry().register(EXCHANGE);
+        SHRINE = new UABlock(UABlock.SHRINE);
+        SHRINE.setRegistryName(UndyingArcana.MODID, "soul_shrine");
+        SHRINE.setUnlocalizedName(UndyingArcana.MODID + ".soul_shrine");
+        SHRINE.setCreativeTab(UndyingArcana.TAB);
+        event.getRegistry().register(SHRINE);
         FoodBlocks.registerBlocks(event);
     }
 
@@ -130,7 +135,7 @@ public final class ModItems {
         Item altar = new ItemBlock(RELIC_ALTAR);
         altar.setRegistryName(RELIC_ALTAR.getRegistryName());
         ALL.add(altar);
-        for (Block b : new Block[]{JEWELER, EXCHANGE}) {
+        for (Block b : new Block[]{JEWELER, EXCHANGE, SHRINE}) {
             Item ib = new ItemBlock(b);
             ib.setRegistryName(b.getRegistryName());
             ALL.add(ib);
@@ -328,6 +333,9 @@ public final class ModItems {
         }
         registerLegends();
         SurvivalItems.register(ALL);
+        Relics.register(ALL);
+        Martial.register(ALL);
+        Econ.register(ALL);
         Food.register(ALL);
         FoodBlocks.registerItems(ALL);
         registerBuild1();

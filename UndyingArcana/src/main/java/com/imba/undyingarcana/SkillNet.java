@@ -37,6 +37,10 @@ public final class SkillNet {
         NET.registerMessage(DrinkHandler.class, MsgDrink.class, 16, Side.SERVER);
         NET.registerMessage(WeaveHandler.class, MsgWeave.class, 17, Side.CLIENT);
         NET.registerMessage(WeaveSaveHandler.class, MsgWeaveSave.class, 18, Side.SERVER);
+        NET.registerMessage(RelicHandler.class, MsgRelic.class, 19, Side.SERVER);
+        NET.registerMessage(EconHandler.class, MsgEcon.class, 20, Side.CLIENT);
+        NET.registerMessage(EconActHandler.class, MsgEconAct.class, 21, Side.SERVER);
+        NET.registerMessage(PoseHandler.class, MsgPose.class, 22, Side.CLIENT);
     }
 
     // ------------------------------------------------------------------ key (client -> server)
@@ -88,6 +92,8 @@ public final class SkillNet {
         public int[] need = new int[3];
         public int chargeEl = -1;
         public int chargeNeed = 0;
+        public int focus, focusMax, combo;
+        public int[] cost = new int[3];
         public boolean gun;
         public int mag, magMax, reserve, reloadLeft, reloadTotal;
 
@@ -109,6 +115,12 @@ public final class SkillNet {
             }
             chargeEl = buf.readInt();
             chargeNeed = buf.readInt();
+            focus = buf.readShort();
+            focusMax = buf.readShort();
+            combo = buf.readByte();
+            for (int i = 0; i < 3; i++) {
+                cost[i] = buf.readShort();
+            }
             gun = buf.readBoolean();
             if (gun) {
                 mag = buf.readShort();
@@ -137,6 +149,12 @@ public final class SkillNet {
             }
             buf.writeInt(chargeEl);
             buf.writeInt(chargeNeed);
+            buf.writeShort(focus);
+            buf.writeShort(focusMax);
+            buf.writeByte(combo);
+            for (int i = 0; i < 3; i++) {
+                buf.writeShort(cost[i]);
+            }
             buf.writeBoolean(gun);
             if (gun) {
                 buf.writeShort(mag);
@@ -237,6 +255,45 @@ public final class SkillNet {
         public void toBytes(ByteBuf buf) {
             buf.writeFloat(power);
             buf.writeShort(ticks);
+        }
+    }
+
+    /** Martial body pose of a player (MartialAnim): pose id (Martial.POSE_*), duration in ticks, worn style. */
+    public static class MsgPose implements IMessage {
+        public int entity, pose, dur, style;
+
+        public MsgPose() {
+        }
+
+        public MsgPose(int entity, int pose, int dur, int style) {
+            this.entity = entity;
+            this.pose = pose;
+            this.dur = dur;
+            this.style = style;
+        }
+
+        @Override
+        public void fromBytes(ByteBuf buf) {
+            entity = buf.readInt();
+            pose = buf.readByte();
+            dur = buf.readByte();
+            style = buf.readByte();
+        }
+
+        @Override
+        public void toBytes(ByteBuf buf) {
+            buf.writeInt(entity);
+            buf.writeByte(pose);
+            buf.writeByte(dur);
+            buf.writeByte(style);
+        }
+    }
+
+    public static class PoseHandler implements IMessageHandler<MsgPose, IMessage> {
+        @Override
+        public IMessage onMessage(MsgPose msg, MessageContext ctx) {
+            UndyingArcana.proxy.onPose(msg);
+            return null;
         }
     }
 
@@ -582,9 +639,18 @@ public final class SkillNet {
         public byte[] plan = new byte[Builds.COUNT];
         public String elements = "-1,-1,0", spells = "";
         public int[] spellCd = new int[Magic.SPELLS];
+        public int relicMask, ringTicks = Magic.RING_TICKS, coins;
+        public int[] relicCd = new int[2], relicTotal = new int[2];
 
         @Override
         public void fromBytes(ByteBuf buf) {
+            coins = buf.readInt();
+            relicMask = buf.readInt();
+            ringTicks = buf.readByte();
+            for (int i = 0; i < 2; i++) {
+                relicCd[i] = buf.readInt();
+                relicTotal[i] = buf.readInt();
+            }
             on = buf.readBoolean();
             canAwaken = buf.readBoolean();
             grimoire = buf.readBoolean();
@@ -602,6 +668,13 @@ public final class SkillNet {
 
         @Override
         public void toBytes(ByteBuf buf) {
+            buf.writeInt(coins);
+            buf.writeInt(relicMask);
+            buf.writeByte(ringTicks);
+            for (int i = 0; i < 2; i++) {
+                buf.writeInt(relicCd[i]);
+                buf.writeInt(relicTotal[i]);
+            }
             buf.writeBoolean(on);
             buf.writeBoolean(canAwaken);
             buf.writeBoolean(grimoire);
@@ -727,6 +800,107 @@ public final class SkillNet {
         @Override
         public void toBytes(ByteBuf buf) {
             buf.writeByte(what);
+        }
+    }
+
+    /** Economy screens state (JSON from Econ.state). */
+    public static class MsgEcon implements IMessage {
+        public String json = "";
+
+        public MsgEcon() {
+        }
+
+        public MsgEcon(String json) {
+            this.json = json;
+        }
+
+        @Override
+        public void fromBytes(ByteBuf buf) {
+            json = ByteBufUtils.readUTF8String(buf);
+        }
+
+        @Override
+        public void toBytes(ByteBuf buf) {
+            ByteBufUtils.writeUTF8String(buf, json);
+        }
+    }
+
+    public static class EconHandler implements IMessageHandler<MsgEcon, IMessage> {
+        @Override
+        public IMessage onMessage(MsgEcon msg, MessageContext ctx) {
+            UndyingArcana.proxy.onEcon(msg);
+            return null;
+        }
+    }
+
+    /** Economy actions: op 1 market buy a, 2 service a, 3 shrine donate a (blessing) b (amount), 4 refresh. */
+    public static class MsgEconAct implements IMessage {
+        public int op, a, b;
+
+        public MsgEconAct() {
+        }
+
+        public MsgEconAct(int op, int a, int b) {
+            this.op = op;
+            this.a = a;
+            this.b = b;
+        }
+
+        @Override
+        public void fromBytes(ByteBuf buf) {
+            op = buf.readByte();
+            a = buf.readInt();
+            b = buf.readInt();
+        }
+
+        @Override
+        public void toBytes(ByteBuf buf) {
+            buf.writeByte(op);
+            buf.writeInt(a);
+            buf.writeInt(b);
+        }
+    }
+
+    public static class EconActHandler implements IMessageHandler<MsgEconAct, IMessage> {
+        @Override
+        public IMessage onMessage(MsgEconAct msg, MessageContext ctx) {
+            final EntityPlayerMP p = ctx.getServerHandler().player;
+            p.getServerWorld().addScheduledTask(() -> Econ.act(p, msg.op, msg.a, msg.b));
+            return null;
+        }
+    }
+
+    /** Relic actions: op 0 = equip the relic in container slot n (shift-click), op 1 = use active relic n (0 = R, 1 = B). */
+    public static class MsgRelic implements IMessage {
+        public int op, n;
+
+        public MsgRelic() {
+        }
+
+        public MsgRelic(int op, int n) {
+            this.op = op;
+            this.n = n;
+        }
+
+        @Override
+        public void fromBytes(ByteBuf buf) {
+            op = buf.readByte();
+            n = buf.readShort();
+        }
+
+        @Override
+        public void toBytes(ByteBuf buf) {
+            buf.writeByte(op);
+            buf.writeShort(n);
+        }
+    }
+
+    public static class RelicHandler implements IMessageHandler<MsgRelic, IMessage> {
+        @Override
+        public IMessage onMessage(MsgRelic msg, MessageContext ctx) {
+            final EntityPlayerMP p = ctx.getServerHandler().player;
+            p.getServerWorld().addScheduledTask(() -> Relics.onMessage(p, msg.op, msg.n));
+            return null;
         }
     }
 

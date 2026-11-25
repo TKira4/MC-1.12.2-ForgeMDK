@@ -178,6 +178,7 @@ public final class SpellForge {
             float d = s.has(DELAY) ? dmg * 1.3F : dmg;
             Fx.at(s.c.w, r >= 2 ? Fx.EXPLOSION : Fx.IMPACT, s.c.el, at.x, at.y, at.z, r);
             area(s, at, r, d, push);
+            SpellTerrain.blast(s.c, at, r); // explosions (radius 2+) break blocks
             SpellArts.onImpact(s.c, at, r);
             SpellArts.fusionImpact(s.c, at, r);
             if (s.hooks != null) {

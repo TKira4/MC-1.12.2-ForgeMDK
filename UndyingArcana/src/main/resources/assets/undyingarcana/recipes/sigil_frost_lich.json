@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "undyingarcana:boss_sigils",
+  "ingredients": [
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "minecraft:packed_ice"
+    },
+    {
+      "item": "minecraft:packed_ice"
+    },
+    {
+      "item": "minecraft:snowball"
+    },
+    {
+      "item": "minecraft:iron_ingot"
+    }
+  ],
+  "result": {
+    "item": "undyingarcana:sigil_frost_lich"
+  }
+}

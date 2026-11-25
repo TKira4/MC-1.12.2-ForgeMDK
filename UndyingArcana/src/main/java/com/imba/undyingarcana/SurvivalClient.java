@@ -256,6 +256,18 @@ public class SurvivalClient {
                         + "\n\u00a78All five at 40+: +4 max health. At 0: -2 max health.";
             }
         }
+        // Soul Coin balance, right-aligned above the nutrition bar
+        String cs = String.format("%,d", Coins.count(mc.player));
+        int coinW = mc.fontRenderer.getStringWidth(cs);
+        Gui.drawRect(x0 + 176 - coinW - 17, y0 - 13, x0 + 176, y0 - 1, 0xD0100E0C);
+        net.minecraft.client.renderer.GlStateManager.pushMatrix();
+        net.minecraft.client.renderer.GlStateManager.translate(x0 + 176 - coinW - 15, y0 - 12, 0);
+        net.minecraft.client.renderer.GlStateManager.scale(0.625F, 0.625F, 1F);
+        net.minecraft.client.renderer.RenderHelper.enableGUIStandardItemLighting();
+        mc.getRenderItem().renderItemAndEffectIntoGUI(new ItemStack(ModItems.SOUL_COIN), 0, 0);
+        net.minecraft.client.renderer.RenderHelper.disableStandardItemLighting();
+        net.minecraft.client.renderer.GlStateManager.popMatrix();
+        mc.fontRenderer.drawStringWithShadow(cs, x0 + 176 - coinW - 2, y0 - 11, 0xFFD050);
         if (hover != null) {
             g.drawHoveringText(java.util.Arrays.asList(hover.split("\n")), e.getMouseX(), e.getMouseY());
         }

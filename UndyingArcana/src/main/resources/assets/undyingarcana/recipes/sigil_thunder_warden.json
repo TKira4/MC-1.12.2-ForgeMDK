@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "undyingarcana:boss_sigils",
+  "ingredients": [
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "minecraft:redstone_block"
+    },
+    {
+      "item": "minecraft:glowstone"
+    },
+    {
+      "item": "minecraft:gold_ingot"
+    },
+    {
+      "item": "minecraft:iron_ingot"
+    }
+  ],
+  "result": {
+    "item": "undyingarcana:sigil_thunder_warden"
+  }
+}

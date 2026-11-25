@@ -72,6 +72,13 @@ public final class Shop {
         for (int k = 0; k < SpellArts.ART.length; k++) {
             d.offers.add(o("arcane:" + k, 350));
         }
+        for (int k = 1; k < Martial.ID.length; k++) {
+            d.offers.add(o("manual:" + k, 300));
+        }
+        for (Relics.Def r : Relics.DEFS) {
+            // relics: quality rolls when bought; actives cost more
+            d.offers.add(o(UndyingArcana.MODID + ":" + r.id, r.kind == Relics.RELIC ? 450 : r.kind == Relics.RING ? 180 : 260));
+        }
         d.offers.add(o("minecraft:experience_bottle*4", 20));
         List<String> specs = new ArrayList<>();
         List<Integer> prices = new ArrayList<>();
@@ -86,7 +93,7 @@ public final class Shop {
         File f = new File(Loader.instance().getConfigDir(), "undyingarcana/shop.json");
         try {
             String cur = f.isFile() ? Files.readAllLines(f.toPath(), StandardCharsets.UTF_8).toString() : "";
-            if (f.isFile() && (!cur.contains(":arm_") || !cur.contains(":waterskin") || !cur.contains("arcane:"))) {
+            if (f.isFile() && (!cur.contains(":arm_") || !cur.contains(":waterskin") || !cur.contains("arcane:") || !cur.contains(":ring_power"))) {
                 // shop.json from an older version (no armory weapons / survival items yet): keep it as shop.json.old, write new defaults
                 Files.move(f.toPath(), new File(f.getParentFile(), "shop.json.old").toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
             }
@@ -110,6 +117,21 @@ public final class Shop {
         if (spec.startsWith("arcane:")) {
             return SpellArts.scroll(Integer.parseInt(spec.substring(7).trim()));
         }
+        if (spec.startsWith("relic:")) {
+            // relic:<id>:<quality>
+            String[] p = spec.split(":");
+            for (Relics.Def d : Relics.DEFS) {
+                if (d.id.equals(p[1])) {
+                    ItemStack s = new ItemStack(Relics.ITEMS[java.util.Arrays.asList(Relics.DEFS).indexOf(d)]);
+                    Gear.setQuality(s, p.length > 2 ? Integer.parseInt(p[2]) : 0);
+                    return s;
+                }
+            }
+            return ItemStack.EMPTY;
+        }
+        if (spec.startsWith("manual:")) {
+            return Martial.manual(Integer.parseInt(spec.substring(7).trim()));
+        }
         if (spec.startsWith("scroll:")) {
             String[] p = spec.split(":");
             return Jewelry.ItemEnchantScroll.of(Integer.parseInt(p[1]), Integer.parseInt(p[2]));
@@ -124,7 +146,7 @@ public final class Shop {
         Offer o = offers.offers.get(index);
         times = Math.max(1, Math.min(16, times));
         int cost = o.price * times;
-        if (!Bench.take(p, new ItemStack(ModItems.SOUL_COIN), cost)) {
+        if (!Coins.spend(p, cost)) {
             p.sendMessage(new TextComponentString("\u00a7cYou need " + cost + " Soul Coins."));
             return;
         }
@@ -136,5 +158,6 @@ public final class Shop {
         }
         p.inventoryContainer.detectAndSendChanges();
         Fx.sound(p.world, p.posX, p.posY, p.posZ, "minecraft:entity.villager.yes", 0.8F, 1.0F);
+        Econ.sendState(p);
     }
 }

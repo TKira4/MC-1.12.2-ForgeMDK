@@ -47,7 +47,8 @@ public final class Signatures {
     private static final class State {
         long shadowUntil, riposteUntil, counterUntil, undyingAt, secondWindAt, comboUntil, rallyUntil, switchAt = -1000, blinkAt,
                 lastSneakPress, stillSince;
-        int combo, rally, overcharge;
+        int combo, rally, overcharge, wmHits;
+        long wmReadyUntil, wmCdUntil;
         String family = "";
         boolean sneaking;
         double lx, ly, lz;
@@ -72,11 +73,15 @@ public final class Signatures {
     // ------------------------------------------------------------------ skills
     /** Weapon Master and Overcharge (called while a skill cast is prepared). */
     static void onSkill(SkillCtx c) {
+        if (SkillServer.preview) {
+            return; // HUD preview, not a real cast
+        }
         State s = st(c.p);
         float wm = sig(c.p, Builds.WARRIOR);
-        if (wm > 0 && c.now - s.switchAt <= 60) {
+        if (wm > 0 && c.now < s.wmReadyUntil && c.now >= s.wmCdUntil) {
             c.dmgMult *= 1.0F + 0.4F * wm;
-            s.switchAt = -1000;
+            s.wmReadyUntil = 0;
+            s.wmCdUntil = c.now + 160; // once per 8 s
             SkillServer.msg(c.p, "\u00a7cWeapon Master!");
         }
         float oc = sig(c.p, Builds.MAGE);
@@ -108,7 +113,22 @@ public final class Signatures {
         }
         Entity src = e.getSource().getTrueSource();
         if (src instanceof EntityPlayer && src != t && !inBurst) {
+            weaponMasterHit((EntityPlayer) src, e.getSource());
             attack(e, (EntityPlayer) src, t);
+        }
+    }
+
+    /** Weapon Master: 2 basic hits within 5 s of switching weapon type prime the next skill (+40%, once per 8 s). */
+    private static void weaponMasterHit(EntityPlayer p, net.minecraft.util.DamageSource s) {
+        if (s.getImmediateSource() != p || DamageMeter.current != null || !"player".equals(s.getDamageType())
+                || sig(p, Builds.WARRIOR) <= 0) {
+            return;
+        }
+        State st = st(p);
+        long now = p.world.getTotalWorldTime();
+        if (now - st.switchAt <= 100 && ++st.wmHits == 2 && now >= st.wmCdUntil) {
+            st.wmReadyUntil = now + 100;
+            SkillServer.msg(p, "\u00a7cWeapon Master ready \u00a77- next skill +40%");
         }
     }
 
@@ -237,7 +257,7 @@ public final class Signatures {
             float mult = 1.5F + 0.5F * gambler + Gear.critDamage(p);
             if (gambler > 0 && p.getRNG().nextFloat() < 0.10F * gambler) {
                 mult = 3.0F;
-                goldBurst(p.world, t);
+                goldBurst(p, t);
             }
             m *= mult;
             Fx.sound(p.world, t.posX, t.posY, t.posZ, "minecraft:entity.player.attack.crit", 1.0F, 1.0F);
@@ -321,9 +341,10 @@ public final class Signatures {
         }
     }
 
-    private static void goldBurst(World w, EntityLivingBase t) {
+    private static void goldBurst(EntityPlayer p, EntityLivingBase t) {
+        World w = p.world;
         int n = 2 + w.rand.nextInt(4);
-        w.spawnEntity(new EntityItem(w, t.posX, t.posY + 1, t.posZ, new ItemStack(ModItems.SOUL_COIN, n)));
+        Coins.add(p, n);
         Fx.at(w, Fx.EXPLOSION, Fx.HOLY, t.posX, t.posY + 1, t.posZ, 0.8);
         Fx.sound(w, t.posX, t.posY, t.posZ, "minecraft:entity.experience_orb.pickup", 1.0F, 0.6F);
     }
@@ -390,6 +411,7 @@ public final class Signatures {
             if (!fam.isEmpty() && !fam.equals(st.family)) {
                 if (!st.family.isEmpty()) {
                     st.switchAt = now;
+                    st.wmHits = 0;
                 }
                 st.family = fam;
             }

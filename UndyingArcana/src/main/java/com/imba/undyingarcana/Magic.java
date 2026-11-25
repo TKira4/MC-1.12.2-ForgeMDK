@@ -232,7 +232,7 @@ public final class Magic {
 
     /** Rune slots per spell: 1 + Magic / 40, up to 3. */
     public static int runeSlots(EntityPlayer p) {
-        return Math.max(1, Math.min(MAX_RUNES, 1 + Stats.stats(p)[Builds.MAG] / MAGIC_PER_RUNE));
+        return Math.max(1, Math.min(MAX_RUNES, 1 + Stats.stats(p)[Builds.MAG] / MAGIC_PER_RUNE + Catalyst.extraRunes(p)));
     }
 
     public static Spell spell(EntityPlayer p, int slot) {
@@ -307,7 +307,7 @@ public final class Magic {
         s.which2 = s.which2 >= 0 ? slotOf(p, s.which2) : -1;
         s.costOv = graphCost(p, slot, g);
         s.cdOv = g.cooldown();
-        s.rings = g.maxRings();
+        s.rings = Relics.maxRings(p, g.maxRings());
         return s;
     }
 
@@ -345,8 +345,8 @@ public final class Magic {
         if (ward) {
             Power.spend(p, cost);
         }
-        boolean free = Power.strength(p, Builds.MAG) > 0;
-        int cd = free ? 10 : (int) Math.round(g.cooldown() * Gear.cooldownMult(p) * Power.cooldownMult(p));
+        // Ascension halves the cooldown through Power.cooldownMult (no more near-zero cooldowns)
+        int cd = (int) Math.round(g.cooldown() * Gear.cooldownMult(p) * Power.cooldownMult(p) * (Relics.has(p, Relics.WHISPER_EARRING) ? 0.9 : 1.0));
         m.setLong("cd" + slot, now + cd);
         m.setInteger("mx" + slot, m.getInteger("mx" + slot) + 1);
         Power.sync(p, true);
@@ -363,7 +363,7 @@ public final class Magic {
             return;
         }
         SpellGraph g = SpellGraph.fromNBT(tag);
-        String bad = g.check(Stats.stats(p)[Builds.MAG], runeSlots(p));
+        String bad = g.check(Catalyst.blockMagic(p), runeSlots(p));
         for (SpellGraph.Node n : g.nodes) {
             if (bad == null && n.type == SpellGraph.ART && SpellArts.rank(p, n.p[0]) <= 0) {
                 bad = "You have not learned " + SpellArts.ART[n.p[0]] + " (Arcane Scroll).";
@@ -394,8 +394,7 @@ public final class Magic {
             t.setTag("g" + i, graph(p, i).toNBT());
             t.setInteger("mx" + i, mg(p).getInteger("mx" + i));
         }
-        int mag = Stats.stats(p)[Builds.MAG];
-        t.setInteger("magic", mag);
+        t.setInteger("magic", Catalyst.blockMagic(p));
         t.setInteger("runes", runeSlots(p));
         t.setInteger("open", spellSlots(p));
         t.setIntArray("arts", SpellArts.ranks(p));
@@ -470,7 +469,7 @@ public final class Magic {
                 m.setInteger(key, -1);
             }
             if (m.getInteger(key) >= 0 && m.getInteger(key) != el && !p.capabilities.isCreativeMode) {
-                if (!Bench.take(p, new ItemStack(ModItems.SOUL_COIN), CHANGE_COST)) {
+                if (!Coins.spend(p, CHANGE_COST)) {
                     p.sendMessage(new TextComponentString("\u00a7cChanging an element costs " + CHANGE_COST + " Soul Coins."));
                     return;
                 }
@@ -509,6 +508,8 @@ public final class Magic {
                 cast(p, a, charge);
             }
             return;
+        } else if (op == 7) {
+            Catalyst.basicBolt(p);
         } else if (op == 6) {
             writePage(p, a);
             return;
@@ -522,6 +523,14 @@ public final class Magic {
         cast(p, slot, 0);
     }
 
+    /** Clears every spell cooldown of a player (Hourglass Relic). */
+    public static void resetCooldowns(EntityPlayer p) {
+        NBTTagCompound m = magicData(p);
+        for (int i = 0; i < SPELLS; i++) {
+            m.removeTag("cd" + i);
+        }
+    }
+
     /** Ticks of holding the key per magic ring. */
     public static final int RING_TICKS = 12;
 
@@ -532,9 +541,15 @@ public final class Magic {
             return;
         }
         SpellGraph g = graph(p, slot);
-        int rings = Math.max(0, Math.min(g.maxRings(), charge / RING_TICKS));
+        int rings = Math.max(0, Math.min(Relics.maxRings(p, g.maxRings()), charge / Relics.ringTicks(p)));
         float f = rings / 5F;
-        if (g.check(Stats.stats(p)[Builds.MAG], runeSlots(p)) != null || !payFor(p, slot, g, false, 1F + 0.15F * rings)) {
+        float costMul = (1F + 0.15F * rings) * (g.maxRings() == 0 && Catalyst.heldKind(p) == Catalyst.WAND ? 0.8F : 1F);
+        String bad = g.check(Catalyst.blockMagic(p), runeSlots(p));
+        if (bad != null) {
+            p.sendStatusMessage(new TextComponentString("\u00a7c" + bad), true);
+            return;
+        }
+        if (!payFor(p, slot, g, false, costMul)) {
             return;
         }
         SpellGraph.Node main = g.mainShape();
@@ -548,7 +563,7 @@ public final class Magic {
             Fx.sound(p, SpellArts.CAST_SOUND[el], 0.7F, 1.2F - 0.2F * f);
             SpellArts.onCast(p, el);
         }
-        SpellVM.cast(p, slot, g, masteryMult(p, slot) * (1F + 0.25F * rings), null, null, null, rings);
+        SpellVM.cast(p, slot, g, masteryMult(p, slot) * (1F + Catalyst.perRing(p) * rings), null, null, null, rings);
         SkillServer.scoreSet(p, "za_t_wand", 1);
     }
 
@@ -598,6 +613,14 @@ public final class Magic {
         c.level = Builds.skillLevel(Stats.stats(p)[Builds.MAG]);
         c.lvlK = 0.25F;
         c.dmgMult *= 1.0F + 0.012F * Stats.stats(p)[Builds.MAG];
+        // relics: element bonuses (Sigils, Crown of Embers, Pyromancer set) and the Amulet of Fusion
+        c.dmgMult *= el2 >= 0 && el2 != el ? (Relics.elementMult(p, el) + Relics.elementMult(p, el2)) / 2F : Relics.elementMult(p, el);
+        // catalyst in hand: tier, quality and attunement (70% without one); Scepter makes spells larger
+        c.dmgMult *= Catalyst.spellMult(p, el);
+        c.size *= Catalyst.sizeMult(p);
+        if (c.fusion >= 0 && Relics.has(p, Relics.AMULET_FUSION)) {
+            c.dmgMult *= 1.2F;
+        }
         Stats.skillBonus(c);
         c.size *= sp.size();
         c.speed *= sp.speed();

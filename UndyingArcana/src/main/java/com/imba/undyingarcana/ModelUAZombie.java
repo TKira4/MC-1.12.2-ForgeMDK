@@ -484,7 +484,7 @@ public class ModelUAZombie extends ModelBiped {
         float breathe = MathHelper.sin(age * 0.067F) * 0.05F;
         bipedHead.rotateAngleX += p[0];
         bipedHead.rotateAngleY += p[1];
-        bipedHead.rotateAngleZ += p[2];
+        bipedHead.rotateAngleZ = p[2]; // vanilla never resets Z: += made the head spin
         bipedRightArm.rotateAngleX = p[3] + walk * 0.35F - hit * 1.1F + breathe;
         bipedRightArm.rotateAngleY = p[4];
         bipedRightArm.rotateAngleZ = p[5] + breathe;

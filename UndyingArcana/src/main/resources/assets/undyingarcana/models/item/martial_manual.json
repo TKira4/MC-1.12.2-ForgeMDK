@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "undyingarcana:items/martial_manual",
+    "layer1": "undyingarcana:items/martial_manual_band"
+  }
+}

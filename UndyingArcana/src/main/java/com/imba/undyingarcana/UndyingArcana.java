@@ -33,6 +33,7 @@ public class UndyingArcana {
         event.registerServerCommand(new ZombieDirector.Command());
         event.registerServerCommand(new Stats.Command());
         event.registerServerCommand(new Quests.Command());
+        event.registerServerCommand(new Econ.PayCommand());
         Quests.load();
         Shop.load();
     }

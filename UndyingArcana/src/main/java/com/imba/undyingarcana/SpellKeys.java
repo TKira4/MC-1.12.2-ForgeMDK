@@ -62,9 +62,15 @@ public class SpellKeys {
 
     private static int ringSound;
 
+    /** Ticks per magic ring for this player (Spellweaver Gloves make it shorter). */
+    static int ringTicks() {
+        SkillNet.MsgPower d = PowerHud.data;
+        return d == null || d.ringTicks <= 0 ? Magic.RING_TICKS : d.ringTicks;
+    }
+
     /** Most rings the charging spell can build. */
     public static int maxRings() {
-        return chargeSlot < 0 ? 0 : Math.max(0, Math.min(5, PowerHud.spells()[chargeSlot].rings));
+        return chargeSlot < 0 ? 0 : Math.max(0, Math.min(6, PowerHud.spells()[chargeSlot].rings));
     }
 
     /** Full rings built so far by the charging spell. */
@@ -73,7 +79,7 @@ public class SpellKeys {
         if (chargeSlot < 0 || mc.player == null) {
             return 0;
         }
-        return (int) Math.min(maxRings(), (mc.player.ticksExisted - chargeStart) / Magic.RING_TICKS);
+        return (int) Math.min(maxRings(), (mc.player.ticksExisted - chargeStart) / ringTicks());
     }
 
     /** Progress 0..1 of the ring being built (1 when all rings are done). */
@@ -82,7 +88,7 @@ public class SpellKeys {
         if (chargeSlot < 0 || mc.player == null || rings() >= maxRings()) {
             return 1F;
         }
-        return (mc.player.ticksExisted - chargeStart) % Magic.RING_TICKS / (float) Magic.RING_TICKS;
+        return (mc.player.ticksExisted - chargeStart) % ringTicks() / (float) ringTicks();
     }
 
     /** Charge 0..1 of the held spell (rings built / max rings). */

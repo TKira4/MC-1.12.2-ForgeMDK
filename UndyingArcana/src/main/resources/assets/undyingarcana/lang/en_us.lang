@@ -280,6 +280,10 @@ item.undyingarcana.scroll_reforge.name=Scroll of Reforging
 item.undyingarcana.grimoire.name=Grimoire
 item.undyingarcana.mana_potion.name=Mana Potion
 key.undyingarcana.awaken=Awaken
+key.undyingarcana.relic1=Use active relic 1
+key.undyingarcana.relic2=Use active relic 2
+item.undyingarcana.relic.name=Relic
+item.undyingarcana.martial_manual.name=Martial Manual
 
 # Armory
 item.undyingarcana.arm_longsword_iron.name=Iron Longsword
@@ -462,3 +466,6 @@ item.undyingarcana.spoiled_food.name=Spoiled Food
 item.undyingarcana.stew.name=Stew
 item.undyingarcana.spell_blueprint.name=Spell Blueprint
 item.undyingarcana.arcane_scroll.name=Arcane Scroll
+
+tile.undyingarcana.soul_shrine.name=Soul Shrine
+item.undyingarcana.recall_scroll.name=Recall Scroll

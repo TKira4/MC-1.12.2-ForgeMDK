@@ -12,9 +12,14 @@ import net.minecraft.util.text.TextComponentString;
  * Jeweler's Bench actions (server side): cut a jewel from 1 uncut gem + 5 reagents, put a jewel into a socket of the
  * item in the main hand, take one out (costs Soul Coins).
  * Reagents add +1 (Perfect +2) to a secondary stat each; Relic Shards raise the grade (1-2 Fine, 3+ Perfect).
+ * Putting a jewel in costs a fee by its grade; three jewels of the same gem and grade fuse into one of the next grade.
  */
 public final class Bench {
     public static final int UNSOCKET_COST = 20, REAGENTS = 5;
+    /** Fee to put a jewel in, by grade (Rough, Fine, Perfect). */
+    public static final int[] SOCKET_COST = {5, 15, 40};
+    /** Fee to fuse three jewels into the next grade, by the grade made (index 1 = Fine, 2 = Perfect). */
+    public static final int[] FUSE_COST = {0, 40, 120};
     /** Reagent i raises gear stat i (0..7); index 8 is the Relic Shard. */
     public static ItemStack reagent(int i) {
         switch (i) {
@@ -74,7 +79,10 @@ public final class Bench {
         p.sendMessage(new TextComponentString(s));
     }
 
-    /** op 0 cut (a = gem, r = 9 reagent counts), 1 socket (a = inventory slot of the jewel), 2 unsocket (a = socket index). */
+    /**
+     * op 0 cut (a = gem, r = 9 reagent counts), 1 socket (a = inventory slot of the jewel), 2 unsocket (a = socket index),
+     * 3 fuse (a = inventory slot of one of the three jewels).
+     */
     public static void act(EntityPlayerMP p, int op, int a, int[] r) {
         if (!Stats.on(p.world)) {
             return;
@@ -83,6 +91,7 @@ public final class Bench {
             case 0: cut(p, a, r); break;
             case 1: socket(p, a); break;
             case 2: unsocket(p, a); break;
+            case 3: fuse(p, a); break;
             default: break;
         }
         p.inventoryContainer.detectAndSendChanges();
@@ -130,7 +139,7 @@ public final class Bench {
                 take(p, reagent(i), r[i]);
             }
         }
-        take(p, new ItemStack(ModItems.SOUL_COIN), cost);
+        Coins.spend(p, cost);
         NBTTagCompound j = new NBTTagCompound();
         j.setInteger("g", gem);
         j.setInteger("gr", gr);
@@ -182,6 +191,11 @@ public final class Bench {
                 }
             }
         }
+        int fee = SOCKET_COST[Math.max(0, Math.min(2, j.getInteger("gr")))];
+        if (!p.capabilities.isCreativeMode && !Coins.spend(p, fee)) {
+            msg(p, "\u00a7cPutting this jewel in costs " + fee + " Soul Coins.");
+            return;
+        }
         list.appendTag(j);
         Gear.tag(gear).setTag("j", list);
         js.shrink(1);
@@ -194,7 +208,7 @@ public final class Bench {
         if (idx < 0 || idx >= list.tagCount()) {
             return;
         }
-        if (!take(p, new ItemStack(ModItems.SOUL_COIN), UNSOCKET_COST)) {
+        if (!Coins.spend(p, UNSOCKET_COST)) {
             msg(p, "\u00a7cTaking a jewel out costs " + UNSOCKET_COST + " Soul Coins.");
             return;
         }
@@ -208,4 +222,78 @@ public final class Bench {
         Fx.sound(p.world, p.posX, p.posY, p.posZ, "minecraft:entity.item.pickup", 1.0F, 0.8F);
     }
 
+
+    /** Inventory slots of jewels with the same gem and grade as the jewel in slot a (a first), or null if fewer than 3. */
+    public static java.util.List<Integer> fuseSet(EntityPlayer p, int a) {
+        if (a < 0 || a >= p.inventory.getSizeInventory()) {
+            return null;
+        }
+        NBTTagCompound j = Jewelry.jewelData(p.inventory.getStackInSlot(a));
+        if (j == null || j.getInteger("gr") >= 2) {
+            return null;
+        }
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        out.add(a);
+        for (int i = 0; i < p.inventory.getSizeInventory() && out.size() < 3; i++) {
+            NBTTagCompound o = i == a ? null : Jewelry.jewelData(p.inventory.getStackInSlot(i));
+            if (o != null && o.getInteger("g") == j.getInteger("g") && o.getInteger("gr") == j.getInteger("gr")) {
+                out.add(i);
+            }
+        }
+        return out.size() == 3 ? out : null;
+    }
+
+    /** The jewel three jewels fuse into: next grade, the best of each secondary stat (doubled into Perfect), new drawback. */
+    public static NBTTagCompound fused(EntityPlayer p, java.util.List<Integer> set, java.util.Random r) {
+        NBTTagCompound first = Jewelry.jewelData(p.inventory.getStackInSlot(set.get(0)));
+        int gr = first.getInteger("gr") + 1;
+        int[] sec = new int[Gear.STATS];
+        for (int slot : set) {
+            int[] o = Jewelry.jewelData(p.inventory.getStackInSlot(slot)).getIntArray("sec");
+            for (int i = 0; i < Math.min(o.length, sec.length); i++) {
+                sec[i] = Math.max(sec[i], o[i]);
+            }
+        }
+        if (gr == 2) {
+            for (int i = 0; i < sec.length; i++) {
+                sec[i] *= 2;
+            }
+        }
+        NBTTagCompound j = new NBTTagCompound();
+        j.setInteger("g", first.getInteger("g"));
+        j.setInteger("gr", gr);
+        j.setIntArray("sec", sec);
+        if (gr == 2 && r != null) {
+            int dr;
+            do {
+                dr = r.nextInt(Gear.STATS);
+            } while (dr == Gear.GEM_STAT[first.getInteger("g")] || dr >= 8);
+            j.setInteger("dr", dr);
+        }
+        return j;
+    }
+
+    private static void fuse(EntityPlayerMP p, int a) {
+        java.util.List<Integer> set = fuseSet(p, a);
+        if (set == null) {
+            msg(p, "\u00a7cFusing needs three jewels of the same gem and grade (not Perfect).");
+            return;
+        }
+        NBTTagCompound j = fused(p, set, p.getRNG());
+        int cost = FUSE_COST[j.getInteger("gr")];
+        if (!p.capabilities.isCreativeMode && !Coins.spend(p, cost)) {
+            msg(p, "\u00a7cFusing into a " + Gear.GRADE[j.getInteger("gr")] + " jewel costs " + cost + " Soul Coins.");
+            return;
+        }
+        for (int slot : set) {
+            p.inventory.getStackInSlot(slot).shrink(1);
+        }
+        ItemStack out = Jewelry.jewel(j);
+        if (!p.inventory.addItemStackToInventory(out)) {
+            p.dropItem(out, false);
+        }
+        Fx.at(p.world, Fx.FLASH, Fx.ARCANE, p.posX, p.posY + 1, p.posZ, 1.0);
+        Fx.sound(p.world, p.posX, p.posY, p.posZ, "minecraft:block.enchantment_table.use", 0.8F, 1.4F);
+        msg(p, "\u00a7dFused: " + Jewelry.jewelLine(j));
+    }
 }

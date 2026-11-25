@@ -53,6 +53,11 @@ public class BossSigil extends GlintItem {
     }
 
     private EntityLSBoss create(World world) {
+        return create(world, boss);
+    }
+
+    /** A new boss entity by id (undying_king for unknown ids). */
+    public static EntityLSBoss create(World world, String boss) {
         switch (boss) {
             case "infernal_brute":
                 return new EntityInfernalBrute(world);

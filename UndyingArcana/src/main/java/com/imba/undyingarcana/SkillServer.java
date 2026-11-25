@@ -33,7 +33,8 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
  *
  * Player data it reads (written by the pack's CraftTweaker scripts): za_class, za_rrank / za_wrank / za_mrank,
  * za_lv_atk / za_lv_arc / za_lv_mag / za_lv_def, za_build, za_tune_&lt;family&gt;, tags za_path_*, za_tr_quick,
- * za_tr_volley, za_ac_&lt;n&gt;. Each weapon has its own cooldowns (compound za_cds, key "&lt;item id&gt;#&lt;slot&gt;");
+ * za_tr_volley, za_ac_&lt;n&gt;. Cooldowns are per move set, so every weapon of one type shares them (compound za_cds,
+ * key "t:&lt;type&gt;#&lt;slot&gt;"; legend weapons keep their own "&lt;item id&gt;#&lt;slot&gt;");
  * scripts shorten all of them by adding ticks to za_cd_cut.
  */
 @Mod.EventBusSubscriber(modid = UndyingArcana.MODID)
@@ -68,6 +69,37 @@ public final class SkillServer {
         long hudSent;
         final boolean[] cooling = new boolean[3];
         String coolItem = "";
+        // drawing a weapon: skills of a newly held weapon type wait drawTotal ticks
+        String drawKey = "";
+        long drawUntil;
+        int drawTotal = 1;
+    }
+
+    /** True while the HUD builds a preview context: one-shot bonuses (Weapon Master, Overcharge) must not trigger. */
+    static boolean preview;
+
+    /** Cooldown key of a weapon: its move set (all katanas share), or the item itself for legend weapons. */
+    static String cdKey(SkillCatalog.Info in) {
+        return in.legend.isEmpty() ? "t:" + in.type : in.id;
+    }
+
+    private static final java.util.Set<String> LIGHT = new java.util.HashSet<>(java.util.Arrays.asList("dagger", "knives", "rapier",
+            "sickles", "claws", "gauntlets", "chakram", "twinblades", "katana", "boomerang"));
+
+    /** Ticks to draw a weapon before its skills can be used: heavy 1.5 s, light 0.6 s, others 1 s. */
+    static int drawTicks(SkillCatalog.Info in) {
+        return "heavy".equals(in.family) ? 30 : LIGHT.contains(in.type) || "fist".equals(in.family) ? 12 : 20;
+    }
+
+    /** Focus cost of a weapon skill (Quick 15, Heavy 20 + 5 per charge tier, Art 40). Wands pay mana instead. */
+    public static int focusCost(int slot, int tier) {
+        return slot == 0 ? 15 : slot == 2 ? 40 : 20 + 5 * Math.max(1, tier);
+    }
+
+    /** Ticks left before skills of the held weapon can be used (weapon being drawn). */
+    public static long drawLeft(EntityPlayer p) {
+        State s = STATES.get(p.getUniqueID());
+        return s == null ? 0 : Math.max(0, s.drawUntil - p.world.getTotalWorldTime());
     }
 
     private static State state(EntityPlayer p) {
@@ -189,11 +221,11 @@ public final class SkillServer {
     }
 
     public static long cdEnd(EntityPlayer p, SkillCatalog.Info in, int slot) {
-        return in == null ? 0 : cds(p).getLong(in.id + "#" + slot);
+        return in == null ? 0 : cds(p).getLong(cdKey(in) + "#" + slot);
     }
 
     public static int cdTotal(EntityPlayer p, SkillCatalog.Info in, int slot) {
-        return in == null ? 1 : Math.max(1, cds(p).getInteger(in.id + "#" + slot + "t"));
+        return in == null ? 1 : Math.max(1, cds(p).getInteger(cdKey(in) + "#" + slot + "t"));
     }
 
     public static long cdLeft(EntityPlayer p, SkillCatalog.Info in, int slot) {
@@ -210,8 +242,8 @@ public final class SkillServer {
                 c.removeTag(k + "t");
             }
         }
-        c.setLong(in.id + "#" + slot, end);
-        c.setInteger(in.id + "#" + slot + "t", total);
+        c.setLong(cdKey(in) + "#" + slot, end);
+        c.setInteger(cdKey(in) + "#" + slot + "t", total);
     }
 
     /** Shortens one skill slot of every weapon (slot -1 = all slots). */
@@ -361,6 +393,9 @@ public final class SkillServer {
         if (c.er >= 3) {
             m *= 0.85;
         }
+        if (c.slot == 0 && Relics.has(c.p, Relics.SWIFT_GLOVES)) {
+            m *= 0.8;
+        }
         if ("assassin".equals(c.path) && "dagger".equals(c.in.type) && c.slot == 1) {
             m *= 0.75;
         }
@@ -442,10 +477,15 @@ public final class SkillServer {
         if (!unlocked(p, in, slot)) {
             if (Stats.on(p.world)) {
                 int pts = (int) Math.ceil((needLevel(slot) - 1) * 100 / 31.0);
-                msg(p, "\u00a77" + SkillCatalog.KIND[slot] + " skill unlocks at " + pts + " " + (in.isWand() ? "Magic" : "Weapons") + " points (K).");
+                msg(p, "\u00a77" + SkillCatalog.KIND[slot] + " skill unlocks at " + pts + " " + (in.isWand() ? "Magic" : "fist".equals(in.family) ? "Strength" : "Weapons") + " points (K).");
             } else {
                 msg(p, "\u00a77" + SkillCatalog.KIND[slot] + " skill unlocks at " + skillWord(in) + " level " + needLevel(slot) + ".");
             }
+            return false;
+        }
+        long draw = drawLeft(p);
+        if (draw > 0) {
+            msg(p, "\u00a77Drawing weapon... \u00a7f" + String.format("%.1f", draw / 20.0) + "s");
             return false;
         }
         long left = cdLeft(p, in, slot);
@@ -458,8 +498,7 @@ public final class SkillServer {
     }
 
     private static void startCharge(EntityPlayerMP p, int src) {
-        ItemStack st = p.getHeldItemMainhand();
-        SkillCatalog.Info in = SkillCatalog.identify(st);
+        SkillCatalog.Info in = Martial.heldInfo(p);
         if (in == null) {
             if (src == 2) {
                 msg(p, "\u00a77Hold a weapon, bow or wand to use a skill.");
@@ -471,6 +510,10 @@ public final class SkillServer {
             return;
         }
         if (!checkReady(p, in, 1)) {
+            s.lastSignal = p.world.getTotalWorldTime();
+            return;
+        }
+        if (!in.isWand() && Stats.on(p.world) && !Power.hasFocus(p, focusCost(1, 1))) {
             s.lastSignal = p.world.getTotalWorldTime();
             return;
         }
@@ -506,7 +549,7 @@ public final class SkillServer {
 
     // ------------------------------------------------------------------ cast
     private static void tryCast(EntityPlayerMP p, int slot, int tier) {
-        SkillCatalog.Info in = SkillCatalog.identify(p.getHeldItemMainhand());
+        SkillCatalog.Info in = Martial.heldInfo(p);
         if (in == null) {
             msg(p, "\u00a77Hold a weapon, bow or wand to use a skill.");
             return;
@@ -516,6 +559,10 @@ public final class SkillServer {
         }
         // Mana (new-world systems): wand skills cost mana
         if (in.isWand() && Stats.on(p.world) && !Power.spend(p, Power.wandCost(slot, tier))) {
+            return;
+        }
+        // Focus (new-world systems): every other weapon skill costs focus
+        if (!in.isWand() && Stats.on(p.world) && !Power.spendFocus(p, focusCost(slot, tier))) {
             return;
         }
         SkillCtx c = prepare(p, in, slot);
@@ -610,8 +657,7 @@ public final class SkillServer {
         State s = state(p);
         long now = p.world.getTotalWorldTime();
         if (s.src != 0) {
-            ItemStack st = p.getHeldItemMainhand();
-            SkillCatalog.Info in = SkillCatalog.identify(st);
+            SkillCatalog.Info in = Martial.heldInfo(p);
             if (in == null || !in.id.equals(s.item) || p.isDead) {
                 s.src = 0;
                 s.hudHash = 0;
@@ -642,7 +688,18 @@ public final class SkillServer {
             reduceCooldown(p, -1, cut);
         }
         // "ready" ping for Heavy and Art of the weapon in hand
-        SkillCatalog.Info held = SkillCatalog.identify(p.getHeldItemMainhand());
+        SkillCatalog.Info held = Martial.heldInfo(p);
+        if (held != null) {
+            // a different weapon type in hand: its skills wait while it is drawn (empty hands keep the last one)
+            String key = cdKey(held);
+            if (!key.equals(s.drawKey)) {
+                if (!s.drawKey.isEmpty() && Stats.on(p.world)) {
+                    s.drawTotal = drawTicks(held);
+                    s.drawUntil = now + s.drawTotal;
+                }
+                s.drawKey = key;
+            }
+        }
         String heldId = held == null ? "" : held.id;
         if (!heldId.equals(s.coolItem)) {
             s.coolItem = heldId;
@@ -663,7 +720,7 @@ public final class SkillServer {
 
     private static void syncHud(EntityPlayerMP p, State s, long now) {
         SkillNet.MsgHud m = new SkillNet.MsgHud();
-        SkillCatalog.Info in = SkillCatalog.identify(p.getHeldItemMainhand());
+        SkillCatalog.Info in = Martial.heldInfo(p);
         NBTTagCompound d = p.getEntityData();
         int hash;
         if (in == null) {
@@ -672,7 +729,13 @@ public final class SkillServer {
         } else {
             m.active = true;
             m.type = in.id;
-            SkillCtx c = prepare(p, in, 1);
+            SkillCtx c;
+            preview = true;
+            try {
+                c = prepare(p, in, 1);
+            } finally {
+                preview = false;
+            }
             String head = SkillCatalog.buildName(c.build);
             if (c.imbued) {
                 head += " [" + capital(c.element) + "]";
@@ -681,14 +744,26 @@ public final class SkillServer {
             if (tune > 0) {
                 head += (head.isEmpty() ? "" : " - ") + SkillCatalog.presetNames()[Math.min(3, tune)];
             }
+            if ("fist".equals(in.family)) {
+                int st = Martial.style(p), lv = Martial.mastery(p, st);
+                head = "\u00a76" + Martial.NAME[st] + (lv > 0 ? " " + new String[]{"I", "II", "III", "IV", "V"}[lv - 1] : "")
+                        + (head.isEmpty() ? "" : "\u00a7r - " + head);
+                m.combo = Martial.comboStep(p);
+            }
             m.header = head;
             m.name[0] = SkillCatalog.quickName(in);
             m.name[1] = c.name;
             m.name[2] = SkillCatalog.artName(in);
+            long draw = Math.max(0, s.drawUntil - now);
             for (int i = 0; i < 3; i++) {
                 m.icon[i] = SkillCatalog.icon(in, i);
                 m.cdLeft[i] = (int) cdLeft(p, in, i);
                 m.cdTotal[i] = cdTotal(p, in, i);
+                if (draw > m.cdLeft[i]) {
+                    m.cdLeft[i] = (int) draw;
+                    m.cdTotal[i] = s.drawTotal;
+                }
+                m.cost[i] = in.isWand() || !Stats.on(p.world) ? 0 : focusCost(i, 1);
                 m.unlocked[i] = unlocked(p, in, i);
                 m.need[i] = needLevel(i);
             }
@@ -705,7 +780,10 @@ public final class SkillServer {
                 m.reloadLeft = (int) GunLogic.reloadLeft(p, gs);
                 m.reloadTotal = gs.hasTagCompound() ? Math.max(1, gs.getTagCompound().getInteger("ReloadT")) : 1;
             }
-            hash = Objects.hash(in.id, m.header, m.name[1], cdEnd(p, in, 0), cdEnd(p, in, 1), cdEnd(p, in, 2),
+            m.focus = (int) Power.focus(p);
+            int comboHash = m.combo;
+            m.focusMax = Power.maxFocus(p);
+            hash = Objects.hash(in.id, m.header, m.name[1], cdEnd(p, in, 0), cdEnd(p, in, 1), cdEnd(p, in, 2), m.focus, m.focusMax, s.drawUntil, comboHash,
                     m.unlocked[0], m.unlocked[1], m.unlocked[2], s.src, s.start, m.mag, m.reserve, m.reloadLeft > 0);
         }
         if (hash != s.hudHash || now - s.hudSent >= 40) {

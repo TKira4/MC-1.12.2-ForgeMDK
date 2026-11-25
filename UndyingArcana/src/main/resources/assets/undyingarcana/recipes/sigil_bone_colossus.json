@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "undyingarcana:boss_sigils",
+  "ingredients": [
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "minecraft:bone_block"
+    },
+    {
+      "item": "minecraft:bone_block"
+    },
+    {
+      "item": "minecraft:bone"
+    },
+    {
+      "item": "minecraft:sand"
+    }
+  ],
+  "result": {
+    "item": "undyingarcana:sigil_bone_colossus"
+  }
+}

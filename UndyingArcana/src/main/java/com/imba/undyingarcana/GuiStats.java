@@ -305,7 +305,11 @@ public class GuiStats extends GuiScreen {
         fontRenderer.drawString(pts, rx + rw / 2 - fontRenderer.getStringWidth(pts) / 2, y0 + 162, left > 0 ? UiKit.GREEN : UiKit.MUTED);
         if (!free) {
             boolean rh = UiKit.in(mx, my, rx, y0 + 178, rw, 16);
-            UiKit.button(fontRenderer, rx, y0 + 178, rw, 16, "Rebirth", true, a.to("rb", rh ? 1 : 0, 20), 0xB070FF);
+            boolean scroll = Stats.hasRebirthScroll(mc.player);
+            int cost = Stats.respecCost(d.level);
+            String lbl = scroll ? "Respec (scroll)" : "Respec " + cost;
+            UiKit.button(fontRenderer, rx, y0 + 178, rw, 16, UiKit.fit(fontRenderer, "", lbl, rw - 6), scroll || Coins.count(mc.player) >= cost
+                    || mc.player.capabilities.isCreativeMode, a.to("rb", rh ? 1 : 0, 20), 0xB070FF);
         } else {
             // max 2 lines between the points pill and the build card (no overlapping text)
             int fy = y0 + 178;
@@ -359,6 +363,13 @@ public class GuiStats extends GuiScreen {
             java.util.List<String> lines = new java.util.ArrayList<>();
             lines.add(Builds.STAT_COLOR[tip] + Builds.STAT[tip]);
             lines.addAll(fontRenderer.listFormattedStringToWidth("\u00a77" + Builds.STAT_DESC[tip], 180));
+            drawHoveringText(lines, mx, my);
+        } else if (d != null && d.level >= Builds.BUILD_LEVEL && UiKit.in(mx, my, rightX(), y0 + 178, rightW(), 16)) {
+            java.util.List<String> lines = new java.util.ArrayList<>();
+            lines.add("\u00a7dRespec");
+            lines.add("\u00a77Refunds every stat point.");
+            lines.add("\u00a77Uses a Scroll of Rebirth if you carry one,");
+            lines.add("\u00a77otherwise " + Stats.respecCost(d.level) + " Soul Coins (5 per level).");
             drawHoveringText(lines, mx, my);
         }
     }

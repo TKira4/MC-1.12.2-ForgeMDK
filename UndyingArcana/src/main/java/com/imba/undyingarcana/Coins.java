@@ -5,15 +5,18 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 /**
- * Soul Coins, the pack's own currency (new-world systems only, game rule uaBuilds). Dropped by kills (more from elites
- * and bosses, Luck adds 1% per point), Gambler jackpots, Blood Moons survived and quests. Spent at the Jeweler, on
- * enchants and in the shop (Phase 4).
+ * Soul Coins, the pack's own currency (new-world systems only, game rule uaBuilds): a balance per player (persisted
+ * data "coins"), not an item. Kills pay the killer straight away (bosses pay everyone who fought within 48 blocks; Luck
+ * adds 1% per point, the Fortune blessing 10%), and so do Gambler jackpots, Blood Moons survived and quests. Spent at the
+ * Soul Exchange, the Jeweler, the Soul Shrine and on element changes. Old coin items are paid in when carried.
  */
 @Mod.EventBusSubscriber(modid = UndyingArcana.MODID)
 public final class Coins {
@@ -65,6 +68,12 @@ public final class Coins {
             if (r.nextFloat() < 0.25F + 0.05F * tier) {
                 loot.add(SpellArts.randomScroll(r));
             }
+            if (r.nextFloat() < 0.2F + 0.05F * tier) {
+                loot.add(Relics.random(r));
+            }
+            if (r.nextFloat() < 0.15F + 0.03F * tier) {
+                loot.add(Martial.randomManual(r));
+            }
             loot.add(randomGem(r));
             if (r.nextFloat() < 0.15F * tier) {
                 loot.add(legendGem(r));
@@ -81,6 +90,12 @@ public final class Coins {
             if (r.nextFloat() < 0.35F) {
                 e.getDrops().add(new EntityItem(dead.world, dead.posX, dead.posY + 0.5, dead.posZ, SpellArts.randomScroll(r)));
             }
+            if (r.nextFloat() < 0.3F) {
+                e.getDrops().add(new EntityItem(dead.world, dead.posX, dead.posY + 0.5, dead.posZ, Relics.random(r)));
+            }
+            if (r.nextFloat() < 0.2F) {
+                e.getDrops().add(new EntityItem(dead.world, dead.posX, dead.posY + 0.5, dead.posZ, Martial.randomManual(r)));
+            }
             if (r.nextFloat() < 0.25F) {
                 e.getDrops().add(new EntityItem(dead.world, dead.posX, dead.posY + 0.5, dead.posZ, legendGem(r)));
             }
@@ -92,28 +107,87 @@ public final class Coins {
         if (n <= 0) {
             return;
         }
-        float luck = (1.0F + 0.01F * Stats.stats(killer)[Builds.LUCK] + (fortune - 1.0F)) * Power.coinMult(killer);
-        n = (int) (n * luck) + (r.nextFloat() < n * luck % 1 ? 1 : 0);
-        e.getDrops().add(new EntityItem(dead.world, dead.posX, dead.posY + 0.5, dead.posZ, new ItemStack(ModItems.SOUL_COIN, n)));
-    }
-
-    /** Gives coins straight to the inventory (dropped at the feet when it is full). */
-    public static void give(EntityPlayer p, int n) {
-        ItemStack s = new ItemStack(ModItems.SOUL_COIN, n);
-        if (!p.inventory.addItemStackToInventory(s) && !s.isEmpty()) {
-            p.dropItem(s, false);
+        java.util.List<EntityPlayer> payees = new java.util.ArrayList<>();
+        if (dead instanceof EntityLSBoss) {
+            payees.addAll(dead.world.getEntitiesWithinAABB(EntityPlayer.class, dead.getEntityBoundingBox().grow(48),
+                    x -> x.isEntityAlive() && !x.isSpectator()));
+        }
+        if (!payees.contains(killer)) {
+            payees.add(killer);
+        }
+        for (EntityPlayer p : payees) {
+            float luck = (1.0F + 0.01F * Stats.stats(p)[Builds.LUCK] + (Gear.fortune(p) - 1.0F)) * Power.coinMult(p)
+                    * (Econ.blessed(p.world, 1) ? 1.1F : 1F);
+            int got = (int) (n * luck) + (r.nextFloat() < n * luck % 1 ? 1 : 0);
+            add(p, got);
         }
     }
 
+    // ------------------------------------------------------------------ balance
+    /** Client copy of the local player's balance (from MsgPower). */
+    public static int clientBalance;
+
+    public static int balance(EntityPlayer p) {
+        return Stats.data(p).getInteger("coins");
+    }
+
+    /** Adds coins to the balance (and syncs it). */
+    public static void add(EntityPlayer p, int n) {
+        if (n <= 0 || p.world.isRemote) {
+            return;
+        }
+        NBTTagCompound d = Stats.data(p);
+        d.setInteger("coins", (int) Math.min(Integer.MAX_VALUE, (long) d.getInteger("coins") + n));
+        if (p instanceof EntityPlayerMP) {
+            Power.sync((EntityPlayerMP) p, true);
+        }
+    }
+
+    /** Takes coins if the balance has them; creative always pays. */
+    public static boolean spend(EntityPlayer p, int n) {
+        if (n <= 0 || p.capabilities.isCreativeMode) {
+            return true;
+        }
+        NBTTagCompound d = Stats.data(p);
+        if (d.getInteger("coins") < n) {
+            return false;
+        }
+        d.setInteger("coins", d.getInteger("coins") - n);
+        if (p instanceof EntityPlayerMP) {
+            Power.sync((EntityPlayerMP) p, true);
+        }
+        return true;
+    }
+
+    /** Old name: adds to the balance. */
+    public static void give(EntityPlayer p, int n) {
+        add(p, n);
+    }
+
+    /** Balance (the client side reads the synced copy). */
     public static int count(EntityPlayer p) {
+        return p.world.isRemote ? clientBalance : balance(p);
+    }
+
+    /** Old Soul Coin items in the inventory are paid into the balance. */
+    @SubscribeEvent
+    public static void onTick(net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent e) {
+        EntityPlayer p = e.player;
+        if (e.phase != net.minecraftforge.fml.common.gameevent.TickEvent.Phase.END || p.world.isRemote || p.ticksExisted % 20 != 11
+                || !Stats.on(p.world)) {
+            return;
+        }
         int n = 0;
         for (int i = 0; i < p.inventory.getSizeInventory(); i++) {
             ItemStack s = p.inventory.getStackInSlot(i);
             if (s.getItem() == ModItems.SOUL_COIN) {
                 n += s.getCount();
+                p.inventory.setInventorySlotContents(i, ItemStack.EMPTY);
             }
         }
-        return n;
+        if (n > 0) {
+            add(p, n);
+        }
     }
 
     /** Deep mining: stone and ores below y 32 have a small chance (Luck adds) to drop an uncut gem; diamond / emerald ore 15%. */

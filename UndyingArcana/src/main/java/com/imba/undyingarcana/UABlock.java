@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 
 /** Simple work blocks that open a screen: 0 = Jeweler's Bench, 1 = Soul Exchange. */
 public class UABlock extends Block {
-    public static final int JEWELER = 0, EXCHANGE = 1;
+    public static final int JEWELER = 0, EXCHANGE = 1, SHRINE = 3, FORGE = 4; // 2 = Grimoire screen (MsgOpen kind); 4 = Relic Forge (Relic Altar)
     private final int kind;
 
     public UABlock(int kind) {
@@ -21,7 +21,7 @@ public class UABlock extends Block {
         this.kind = kind;
         setHardness(3.0F);
         setResistance(20.0F);
-        setLightLevel(kind == EXCHANGE ? 0.5F : 0.2F);
+        setLightLevel(kind == JEWELER ? 0.2F : 0.5F);
         setHarvestLevel("pickaxe", 1);
     }
 
@@ -33,7 +33,11 @@ public class UABlock extends Block {
                 p.sendMessage(new TextComponentString("\u00a77This works in the new world (game rule uaBuilds)."));
                 return true;
             }
-            SkillNet.NET.sendTo(new SkillNet.MsgOpen(kind, kind == EXCHANGE ? Shop.json : ""), (EntityPlayerMP) p);
+            SkillNet.NET.sendTo(new SkillNet.MsgOpen(kind, kind == EXCHANGE ? Shop.json : kind == SHRINE ? Econ.state(p) : ""),
+                    (EntityPlayerMP) p);
+            if (kind == EXCHANGE) {
+                Econ.sendState((EntityPlayerMP) p); // black market and services
+            }
         }
         return true;
     }

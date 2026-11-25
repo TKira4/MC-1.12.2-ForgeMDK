@@ -1,0 +1,51 @@
+{
+ "quests": [
+  {
+   "id": "story_elites",
+   "tab": "story",
+   "title": "Marked Ones",
+   "story": "Gold-named zombies carry gifts: Swift, Vampiric, Bomber and worse. Take this sigil: use it in a swamp to call the Plague Mother.",
+   "icon": "minecraft:gold_ingot",
+   "requires": [
+    "story_bloodmoon"
+   ],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "elite",
+     "count": 5
+    }
+   ],
+   "xp": 250,
+   "items": [
+    "undyingarcana:soul_coin*25",
+    "undyingarcana:relic_shard*5",
+    "undyingarcana:sigil_plague_mother*1"
+   ],
+   "repeat": ""
+  },
+  {
+   "id": "story_boss",
+   "tab": "story",
+   "title": "Bigger Than the Rest",
+   "story": "Old powers wait out there: a brute in the Nether, a lich in the cold, a warden in the hills. A Zombie Warlord counts too. Boss Sigils (see JEI) call a boss in its own land. Find one and end it.",
+   "icon": "undyingarcana:mythic_core",
+   "requires": [
+    "story_elites"
+   ],
+   "goals": [
+    {
+     "type": "kill",
+     "target": "miniboss",
+     "count": 1
+    }
+   ],
+   "xp": 600,
+   "items": [
+    "undyingarcana:soul_coin*60",
+    "undyingarcana:mythic_core*1"
+   ],
+   "repeat": ""
+  }
+ ]
+}

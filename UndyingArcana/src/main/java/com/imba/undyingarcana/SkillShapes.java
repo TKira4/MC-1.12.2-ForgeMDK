@@ -229,6 +229,20 @@ public final class SkillShapes {
         return n;
     }
 
+    /** Targets in the cone in front of the caster (like cone(), without hitting them). */
+    public static List<EntityLivingBase> coneTargets(SkillCtx c, double r, double halfAngle) {
+        List<EntityLivingBase> out = new ArrayList<>();
+        double cos = Math.cos(halfAngle);
+        for (EntityLivingBase t : around(c.w, c.p.posX, c.p.posY, c.p.posZ, r)) {
+            double dx = t.posX - c.p.posX, dz = t.posZ - c.p.posZ;
+            double d = Math.sqrt(dx * dx + dz * dz);
+            if (d < 1.2 || (dx * c.lx + dz * c.lz) / d >= cos) {
+                out.add(t);
+            }
+        }
+        return out;
+    }
+
     /** Targets whose body is within width of the segment from + dir * len (dir normalised). */
     public static List<EntityLivingBase> lineTargets(World w, Vec3d from, Vec3d dir, double len, double width) {
         List<EntityLivingBase> out = new ArrayList<>();

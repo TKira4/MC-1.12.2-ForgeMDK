@@ -25,7 +25,11 @@ public class ClientProxy extends CommonProxy {
         MinecraftForge.EVENT_BUS.register(new PowerHud());
         MinecraftForge.EVENT_BUS.register(new SurvivalClient());
         SurvivalClient.init();
+        RelicClient.init();
+        MinecraftForge.EVENT_BUS.register(new RelicClient());
+        MinecraftForge.EVENT_BUS.register(new CatalystClient());
         PairRender.init();
+        MinecraftForge.EVENT_BUS.register(new MartialAnim());
         DebugToggles.init();
     }
 
@@ -37,6 +41,11 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void onFx(final SkillNet.MsgFx msg) {
         Minecraft.getMinecraft().addScheduledTask(() -> FxClient.play(msg));
+    }
+
+    @Override
+    public void onPose(final SkillNet.MsgPose msg) {
+        Minecraft.getMinecraft().addScheduledTask(() -> MartialAnim.receive(msg));
     }
 
     @Override
@@ -67,7 +76,21 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void onOpen(final SkillNet.MsgOpen msg) {
         Minecraft.getMinecraft().addScheduledTask(() -> Minecraft.getMinecraft().displayGuiScreen(
-                msg.kind == 2 ? new GuiGrimoire() : msg.kind == UABlock.JEWELER ? new GuiJeweler() : new GuiShop(msg.json)));
+                msg.kind == 2 ? new GuiGrimoire() : msg.kind == UABlock.JEWELER ? new GuiJeweler()
+                        : msg.kind == UABlock.SHRINE ? new GuiShrine(msg.json) : msg.kind == UABlock.FORGE ? new GuiForge()
+                        : new GuiShop(msg.json)));
+    }
+
+    @Override
+    public void onEcon(final SkillNet.MsgEcon msg) {
+        Minecraft.getMinecraft().addScheduledTask(() -> {
+            net.minecraft.client.gui.GuiScreen s = Minecraft.getMinecraft().currentScreen;
+            if (s instanceof GuiShop) {
+                ((GuiShop) s).econ(msg.json);
+            } else if (s instanceof GuiShrine) {
+                ((GuiShrine) s).econ(msg.json);
+            }
+        });
     }
 
     @Override

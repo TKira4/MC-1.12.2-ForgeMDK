@@ -557,6 +557,7 @@ public final class SpellArts {
 
     private static void boom(SkillCtx c, Vec3d at, double r, float dmg, double push, SpellVM.Hooks hooks) {
         Fx.at(c.w, Fx.EXPLOSION, c.el, at.x, at.y, at.z, r);
+        SpellTerrain.blast(c, at, r);
         for (EntityLivingBase t : SkillShapes.around(c.w, at.x, at.y, at.z, r)) {
             SkillShapes.Hit h = SkillShapes.hit();
             h.from = at;

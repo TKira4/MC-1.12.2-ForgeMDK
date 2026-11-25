@@ -88,7 +88,7 @@ public class SkillHud {
             x0 += 29;
         }
         if (mc.gameSettings.attackIndicator == 2) {
-            x0 += 20;
+            x0 += 24; // past the hotbar attack indicator, leaving room for the focus bar
         }
         int y = h - 22;
         FontRenderer fr = mc.fontRenderer;
@@ -102,6 +102,20 @@ public class SkillHud {
         }
         for (int i = 0; i < 3; i++) {
             drawSlot(mc, fr, i, x0 + i * 25, y, pt);
+        }
+        // martial combo: four pips under the crosshair (lit = hits so far; the 4th hit is the finisher)
+        if (cur.combo > 0 && !mc.gameSettings.hideGUI) {
+            for (int i = 0; i < 4; i++) {
+                int px = w / 2 - 10 + i * 5, py = h / 2 + 20;
+                Gui.drawRect(px, py, px + 3, py + 3, i < cur.combo ? 0xFFFFB43C : i == 3 ? 0x90FF5050 : 0x90000000);
+            }
+        }
+        // focus: a thin vertical bar in the gap between the hotbar and the skill slots
+        if (cur.focusMax > 0) {
+            float f = Math.max(0, Math.min(1F, cur.focus / (float) cur.focusMax));
+            int fh = Math.round(20 * f);
+            Gui.drawRect(x0 - 5, y, x0 - 2, y + 22, 0xB00A0A10);
+            Gui.drawRect(x0 - 4, y + 21 - fh, x0 - 3, y + 21, 0xFFFFB43C);
         }
         if (cur.gun) {
             drawAmmo(fr, x0 + 76, y, pt);
@@ -163,6 +177,11 @@ public class SkillHud {
             Gui.drawRect(x + 16, y + 1, x + 19, y + 2, 0xFFC8C8C8);
             String s = String.valueOf(cur.need[i]);
             fr.drawStringWithShadow(s, x + 11 - fr.getStringWidth(s) / 2.0F + 1, y + 7, 0xD2D2D2);
+        } else if (left <= 0 && cur.cost[i] > cur.focus) {
+            // not enough focus: dim the icon and show the cost
+            Gui.drawRect(x + 1, y + 1, x + 21, y + 21, 0x90200C00);
+            String s = String.valueOf(cur.cost[i]);
+            fr.drawStringWithShadow(s, x + 11 - fr.getStringWidth(s) / 2.0F + 1, y + 7, 0xFFB43C);
         } else if (left > 0) {
             pie(x + 3, y + 3, 16, (float) left / total);
             String s = String.valueOf(left / 20 + 1);
@@ -213,7 +232,7 @@ public class SkillHud {
     }
 
     /** Dark clockwise sweep over a square icon: frac of the square stays covered. */
-    private static void pie(int x, int y, int size, float frac) {
+    static void pie(int x, int y, int size, float frac) {
         float cx = x + size / 2.0F, cy = y + size / 2.0F, half = size / 2.0F;
         GlStateManager.disableTexture2D();
         GlStateManager.enableBlend();

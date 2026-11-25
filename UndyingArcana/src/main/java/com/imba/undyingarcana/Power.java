@@ -29,9 +29,12 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
  * Mana: max 60 + 2 per Magic point, regen 2 + 0.06 per Magic point per second (x1.5 after 5 s without taking damage).
  * Wand skills and Grimoire spells cost mana. Mana Potions restore 60.
  *
+ * Focus: max 100 + 0.5 per Strength and Weapons point; weapon skills cost it (Quick 15, Heavy 25-35, Art 40). Regen 5 per
+ * second, +6 for every basic melee hit that lands, so fights mix normal attacks with skills. Blade Storm halves the cost.
+ *
  * Awakening (key G, level 60+): a 12 s state that depends on the build. A pure build uses its stat's awakening at full
  * strength, a hybrid both of its stats at 70%, a Savant its two highest stats at 50%. Cooldown 3 minutes (kept through
- * death). Effects: Vitality Titan (absorption, regeneration, no knockback), Magic Ascension (free spells, half cooldowns,
+ * death). Effects: Vitality Titan (absorption, regeneration, no knockback), Magic Ascension (spells cost half mana, half cooldowns,
  * +30% spell damage), Strength Rampage (+40% melee, shockwaves), Weapons Blade Storm (cooldowns reset, then halved),
  * Agility Phantom (+40% dodge, speed, mobs lose you), Defense Bastion (-50% damage, taunt, reflect), Luck Fortune
  * (guaranteed crits, double coins).
@@ -50,7 +53,7 @@ public final class Power {
 
     // ------------------------------------------------------------------ mana
     public static int maxMana(EntityPlayer p) {
-        return 60 + 2 * Stats.stats(p)[Builds.MAG];
+        return 60 + 2 * Stats.stats(p)[Builds.MAG] + (Relics.has(p, Relics.SAGE_DIADEM) ? 20 : 0) + Catalyst.extraMana(p);
     }
 
     public static float mana(EntityPlayer p) {
@@ -62,10 +65,10 @@ public final class Power {
         p.getEntityData().setFloat("ua_mana", Math.max(0, Math.min(maxMana(p), v)));
     }
 
-    /** Mana cost after Ascension. */
+    /** Mana cost after Ascension (up to -50%, so charging many rings still costs mana). */
     public static int cost(EntityPlayer p, int base) {
         float s = strength(p, Builds.MAG);
-        return Math.round(base * (1.0F - s));
+        return Math.round(base * (1.0F - 0.5F * s));
     }
 
     /** Takes mana; false (with a message) when there is not enough. Creative never pays. */
@@ -86,6 +89,56 @@ public final class Power {
     /** Wand skill cost by slot (Quick, Heavy by tier, Art). */
     public static int wandCost(int slot, int tier) {
         return slot == 0 ? 12 : slot == 2 ? 45 : 16 + 6 * Math.max(1, tier);
+    }
+
+    // ------------------------------------------------------------------ focus
+    public static int maxFocus(EntityPlayer p) {
+        int[] s = Stats.stats(p);
+        return 100 + (s[Builds.STR] + s[Builds.WPN]) / 2;
+    }
+
+    public static float focus(EntityPlayer p) {
+        NBTTagCompound d = p.getEntityData();
+        return d.hasKey("ua_focus") ? d.getFloat("ua_focus") : maxFocus(p);
+    }
+
+    public static void setFocus(EntityPlayer p, float v) {
+        p.getEntityData().setFloat("ua_focus", Math.max(0, Math.min(maxFocus(p), v)));
+    }
+
+    /** Focus regeneration multiplier (Duelist set). */
+    static float focusRegenMult(EntityPlayer p) {
+        return Relics.set(p, Relics.DUELIST) >= 2 ? 1.5F : 1F;
+    }
+
+    /** Focus cost after Blade Storm (up to -50%) and Duelist Bracers (-15%). */
+    public static int focusCost(EntityPlayer p, int base) {
+        return Math.round(base * (1.0F - 0.5F * strength(p, Builds.WPN)) * (Relics.has(p, Relics.DUELIST_BRACERS) ? 0.85F : 1F));
+    }
+
+    /** True when the player has the focus (with a message when not). Creative always has it. */
+    public static boolean hasFocus(EntityPlayer p, int base) {
+        if (p.capabilities.isCreativeMode) {
+            return true;
+        }
+        int c = focusCost(p, base);
+        if (focus(p) < c) {
+            p.sendStatusMessage(new TextComponentString("\u00a76Not enough focus \u00a77(" + (int) focus(p) + "/" + c
+                    + ") - land normal hits to recover it"), true);
+            return false;
+        }
+        return true;
+    }
+
+    /** Takes focus; false (with a message) when there is not enough. */
+    public static boolean spendFocus(EntityPlayer p, int base) {
+        if (!hasFocus(p, base)) {
+            return false;
+        }
+        if (!p.capabilities.isCreativeMode) {
+            setFocus(p, focus(p) - focusCost(p, base));
+        }
+        return true;
     }
 
     // ------------------------------------------------------------------ awakening
@@ -131,6 +184,11 @@ public final class Power {
             out[pr[0]] = 0.7F;
             out[pr[1]] = 0.7F;
         }
+        if (Relics.has(p, Relics.SIGIL_AWAKENING)) {
+            for (int st = 0; st < Builds.COUNT; st++) {
+                out[st] *= 1.2F; // Sigil of Awakening: every awakening effect +20%
+            }
+        }
         return out;
     }
 
@@ -170,9 +228,9 @@ public final class Power {
         }
         float[] a = new float[Builds.COUNT + 1];
         System.arraycopy(plan, 0, a, 0, Builds.COUNT);
-        a[Builds.COUNT] = now + AWAKEN_TICKS;
+        a[Builds.COUNT] = now + AWAKEN_TICKS + (Relics.has(p, Relics.AMULET_AWAKENED) ? 60 : 0);
         AWAKE.put(p.getUniqueID(), a);
-        pdata(p).setLong("awk", now + AWAKEN_CD);
+        pdata(p).setLong("awk", now + Math.round(AWAKEN_CD * (Relics.has(p, Relics.POCKET_WATCH) ? 0.8F : 1F)));
         StringBuilder name = new StringBuilder();
         for (int st = 0; st < Builds.COUNT; st++) {
             if (plan[st] > 0) {
@@ -222,7 +280,7 @@ public final class Power {
     }
 
     public static float coinMult(EntityPlayer p) {
-        return 1.0F + strength(p, Builds.LUCK);
+        return (1.0F + strength(p, Builds.LUCK)) * (Relics.has(p, Relics.LUCKY_COIN) ? 1.1F : 1F);
     }
 
     /** Spell damage bonus while Ascended. */
@@ -230,6 +288,10 @@ public final class Power {
         float s = strength(c.p, Builds.MAG);
         if (s > 0 && c.in != null && c.in.isWand()) {
             c.dmgMult *= 1.0F + 0.3F * s;
+        }
+        // Duelist set (3 pieces): weapon skills +10%
+        if (c.in != null && !c.in.isWand() && !c.magic && Relics.set(c.p, Relics.DUELIST) >= 3) {
+            c.dmgMult *= 1.1F;
         }
     }
 
@@ -254,6 +316,10 @@ public final class Power {
             }
         }
         Entity src = s.getTrueSource();
+        if (src instanceof EntityPlayer && src != t && s.getImmediateSource() == src && DamageMeter.current == null && "player".equals(s.getDamageType())) {
+            // a basic melee hit (not a skill) recovers focus
+            setFocus((EntityPlayer) src, focus((EntityPlayer) src) + 6 * focusRegenMult((EntityPlayer) src));
+        }
         if (src instanceof EntityPlayer && src != t && s.getImmediateSource() == src) {
             EntityPlayer p = (EntityPlayer) src;
             float str = strength(p, Builds.STR);
@@ -279,11 +345,13 @@ public final class Power {
         long now = p.world.getTotalWorldTime();
         if (p.ticksExisted % 20 == 7) {
             int mag = Stats.stats(p)[Builds.MAG];
-            float regen = (2.0F + 0.06F * mag) * Food.manaMul(p);
+            float regen = (2.0F + 0.06F * mag) * Food.manaMul(p) * (Relics.has(p, Relics.SAGE_DIADEM) ? 1.25F : 1F) * Catalyst.regenMult(p)
+                    * (Econ.blessed(p.world, 2) ? 1.2F : 1F);
             if (now - p.getEntityData().getLong("ua_lasthurt") > 100) {
                 regen *= 1.5F;
             }
             setMana(p, mana(p) + regen);
+            setFocus(p, focus(p) + 5 * focusRegenMult(p) * (Econ.blessed(p.world, 2) ? 1.2F : 1F));
             // awakening upkeep
             boolean on = awake(p);
             Stats.setModifier(p.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE), KB_ID, "UA titan",
@@ -323,6 +391,7 @@ public final class Power {
     public static void onRespawn(PlayerEvent.PlayerRespawnEvent e) {
         if (!e.player.world.isRemote) {
             setMana(e.player, maxMana(e.player));
+            setFocus(e.player, maxFocus(e.player));
             AWAKE.remove(e.player.getUniqueID());
         }
     }
@@ -348,8 +417,15 @@ public final class Power {
             m.plan[st] = (byte) Math.round(plan[st] * 100);
         }
         Magic.fill(p, m);
+        m.coins = Coins.balance(p);
+        m.relicMask = Relics.openMask(p);
+        m.ringTicks = Relics.ringTicks(p);
+        for (int i = 0; i < 2; i++) {
+            m.relicCd[i] = (int) Relics.activeLeft(p, i);
+            m.relicTotal[i] = Relics.activeTotal(p, i);
+        }
         int hash = java.util.Objects.hash(m.on, m.mana, m.manaMax, m.awakeLeft / 20, m.awakeCd / 20, m.canAwaken, java.util.Arrays.hashCode(m.plan),
-                m.spells, m.elements, java.util.Arrays.hashCode(m.spellCd));
+                m.spells, m.elements, java.util.Arrays.hashCode(m.spellCd), m.relicMask, m.ringTicks, m.coins, m.relicCd[0] / 20, m.relicCd[1] / 20);
         Integer last = SENT.get(p.getUniqueID());
         if (force || last == null || last != hash) {
             SENT.put(p.getUniqueID(), hash);

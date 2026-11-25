@@ -125,7 +125,7 @@ public final class Gear {
     }
 
     public static boolean isGear(ItemStack s) {
-        return isArmor(s) || isWeapon(s);
+        return isArmor(s) || isWeapon(s) || Relics.isRelic(s);
     }
 
     public static NBTTagCompound tag(ItemStack s) {
@@ -228,7 +228,9 @@ public final class Gear {
             return;
         }
         int q = quality(s);
-        if (isArmor(s)) {
+        if (Relics.isRelic(s)) {
+            Relics.baseStats(s, out); // relics: their own base stat, scaled by quality
+        } else if (isArmor(s)) {
             out[DEFENSE] += ARMOR_DEFENSE[q];
         } else {
             out[POWER] += WEAPON_POWER[q];
@@ -292,6 +294,14 @@ public final class Gear {
                 armorFx[k] += f[k];
             }
         }
+        for (ItemStack s : Relics.equipped(p)) {
+            addStats(s, out);
+            int[] f = itemEffects(s);
+            for (int k = 0; k < EFFECTS; k++) {
+                armorFx[k] += f[k];
+            }
+        }
+        Relics.recompute(p, out);
         CACHE.put(p.getUniqueID(), out);
         EFFECT_CACHE.put(p.getUniqueID(), new int[][]{itemEffects(p.getHeldItemMainhand()), armorFx});
         return out;
@@ -355,8 +365,8 @@ public final class Gear {
         int we = weaponEnchant(c.p);
         if (we == 23) {
             c.dmgMult *= 1.0F + ENCHANT_VAL[23][0] / 100.0F;
-        } else if (we == 24) {
-            c.p.getFoodStats().addExhaustion(3.0F);
+        } else if (we == 24 && !SkillServer.preview) {
+            c.p.getFoodStats().addExhaustion(3.0F); // real casts only, not the HUD preview
         }
     }
 

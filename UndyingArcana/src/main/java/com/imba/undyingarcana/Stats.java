@@ -151,7 +151,7 @@ public final class Stats {
             String k = in.isRanged() ? "za_lv_arc" : (in.isWand() ? "za_lv_mag" : "za_lv_atk");
             return Math.max(1, d.getInteger(k));
         }
-        return Builds.skillLevel(stats(p)[in.isWand() ? Builds.MAG : Builds.WPN]);
+        return Builds.skillLevel(stats(p)[in.isWand() ? Builds.MAG : "fist".equals(in.family) ? Builds.STR : Builds.WPN]);
     }
 
     /** Build signatures that change a skill cast (Weapon Master, Overcharge). */
@@ -173,7 +173,7 @@ public final class Stats {
             return;
         }
         NBTTagCompound d = data(p);
-        amount = Math.round(amount * (1.0F + 0.01F * stats(p)[Builds.LUCK]));
+        amount = Math.round(amount * (1.0F + 0.01F * stats(p)[Builds.LUCK]) * (Econ.blessed(p.world, 0) ? 1.25F : 1F));
         int lvl = level(p), xp = d.getInteger("xp") + amount;
         int gained = 0;
         while (lvl < Builds.MAX_LEVEL && xp >= Builds.need(lvl)) {
@@ -198,7 +198,17 @@ public final class Stats {
         DIRTY.add(p.getUniqueID());
     }
 
-    /** op 0 = add points, 1 = take back (only before level 16), 2 = Scroll of Rebirth (refund all). */
+    /** Soul Coins to refund all stat points without a Scroll of Rebirth. */
+    public static int respecCost(int level) {
+        return 5 * level;
+    }
+
+    /** True if the player carries a Scroll of Rebirth (client: the Character screen label). */
+    public static boolean hasRebirthScroll(EntityPlayer p) {
+        return !findScroll(p).isEmpty();
+    }
+
+    /** op 0 = add points, 1 = take back (only before level 16), 2 = respec: Scroll of Rebirth or Soul Coins (refund all). */
     public static void act(EntityPlayerMP p, int op, int stat, int amount) {
         if (!on(p.world)) {
             return;
@@ -206,12 +216,13 @@ public final class Stats {
         NBTTagCompound d = data(p);
         if (op == 2) {
             ItemStack scroll = findScroll(p);
-            if (level(p) >= Builds.BUILD_LEVEL && scroll.isEmpty()) {
-                p.sendMessage(new TextComponentString("\u00a7cYou need a Scroll of Rebirth."));
-                return;
-            }
             if (level(p) >= Builds.BUILD_LEVEL) {
-                scroll.shrink(1);
+                if (!scroll.isEmpty()) {
+                    scroll.shrink(1);
+                } else if (!p.capabilities.isCreativeMode && !Coins.spend(p, respecCost(level(p)))) {
+                    p.sendMessage(new TextComponentString("\u00a7cRespec needs a Scroll of Rebirth or " + respecCost(level(p)) + " Soul Coins."));
+                    return;
+                }
             }
             for (int i = 0; i < Builds.COUNT; i++) {
                 d.setInteger("s" + i, 0);
@@ -445,6 +456,12 @@ public final class Stats {
                     gifts.add(SpellArts.randomScroll(p.getRNG()));
                 }
                 if (p.getRNG().nextFloat() < 0.10F) {
+                    gifts.add(Relics.random(p.getRNG()));
+                }
+                if (p.getRNG().nextFloat() < 0.08F) {
+                    gifts.add(Martial.randomManual(p.getRNG()));
+                }
+                if (p.getRNG().nextFloat() < 0.10F) {
                     gifts.add(Coins.legendGem(p.getRNG()));
                 }
                 for (ItemStack gift : gifts) {
@@ -483,6 +500,8 @@ public final class Stats {
             m = 1.0F + 0.006F * st[Builds.MAG];
         } else if (s.getImmediateSource() == p && p.getHeldItemMainhand().isEmpty()) {
             m = 1.0F + 0.02F * st[Builds.STR];
+        } else if (s.getImmediateSource() == p && Martial.isMartial(p.getHeldItemMainhand())) {
+            m = 1.0F + 0.012F * st[Builds.STR]; // fist weapons scale with Strength
         } else {
             m = 1.0F + 0.006F * st[Builds.WPN] + (s.getImmediateSource() == p ? 0.003F * st[Builds.STR] : 0);
         }

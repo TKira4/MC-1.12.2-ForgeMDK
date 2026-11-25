@@ -61,7 +61,14 @@ public final class ArmoryMoves {
             {"m_staff", "wand", "", "Grand Orb", "Pillar", "Elemental Meteor"},
             {"m_orb", "wand", "", "Seeker", "Orbiting Wisps", "Singularity"},
             {"m_scepter", "wand", "", "Royal Bolt", "Sanctum", "Blessing"},
-            {"m_rune", "wand", "", "Rune Mine", "Triple Trap", "Grand Circle"}};
+            {"m_rune", "wand", "", "Rune Mine", "Triple Trap", "Grand Circle"},
+            // fighting styles (Martial): bare hands or a fist weapon with a style; scale with Strength
+            {"fist_brawler", "fist", "steel", "One-Two", "Rising Uppercut", "Haymaker Rush"},
+            {"fist_ironleg", "fist", "wind", "Snap Kick", "Whirlwind Kick", "Sky Drop"},
+            {"fist_tiger", "fist", "blood", "Tiger Rake", "Pounce", "Tiger Frenzy"},
+            {"fist_stone", "fist", "earth", "Stone Jab", "Earthbreaker", "Mountain Stance"},
+            {"fist_palm", "fist", "wind", "Palm Push", "Redirect", "Hundred Palms"},
+            {"fist_arcane", "fist", "", "Spark Jab", "Arcane Burst", "Elemental Avatar"}};
 
     private static final String[][] DESC = {
             {"Dash a short way and cut twice.", "A tornado of blades spins around you, hitting 6 times.", "Blink to the target and cut it 8 times."},
@@ -85,26 +92,37 @@ public final class ArmoryMoves {
             {"A big, slow orb that explodes.", "A pillar of your element erupts at your aim.", "Call down a meteor of your element."},
             {"A seeking orb that follows its target.", "Three wisps circle you for 4s and burn what they touch.", "A black hole at your aim pulls enemies in, then bursts."},
             {"A bolt; allies near you get Speed and a little health.", "Heal allies around you, with Absorption and Resistance.", "Allies within 10 blocks deal 20% more damage for 8s."},
-            {"Place a rune at your aim that explodes when an enemy steps on it.", "Three runes: slowing, exploding and rooting.", "A great circle at your aim burns enemies for 5s."}};
+            {"Place a rune at your aim that explodes when an enemy steps on it.", "Three runes: slowing, exploding and rooting.", "A great circle at your aim burns enemies for 5s."},
+            {"Two fast jabs; the second knocks back.", "A charged uppercut that launches enemies.", "Rush the target: six punches, then a huge knockback."},
+            {"A long, fast kick that pushes enemies away.", "Two spinning kicks hit everything around you.", "Leap high and drop: a shockwave where you land."},
+            {"Three rakes in front of you; enemies bleed.", "Pounce forward through enemies; they bleed heavily.", "Frenzy for 6s: much faster hits, every hit bleeds."},
+            {"One heavy jab that weakens the target.", "Smash the ground: enemies around you are stunned.", "Stance for 6s: Resistance, no knockback, hits send shockwaves."},
+            {"A palm strike that blows enemies far away.", "Guard for 1.5s: a melee hit on you is redirected back.", "Twelve palm strikes on the target; each heals you a little."},
+            {"A jab that bursts with your element.", "Your fist explodes with your element around you.", "For 8s your hits burst with your element (2 mana each)."}};
 
     /** Quick [damage, size, cooldown], Heavy [damage, radius, cooldown, lift, push, fire], Art [damage, size, cooldown]. */
     private static final double[][] QS = {{4.5, 3, 80}, {4.5, 3.5, 80}, {2.5, 3, 70}, {2.2, 3, 70},
             {6, 3.5, 100}, {8, 4, 110}, {6, 1, 80}, {6, 4, 90}, {2.5, 3, 70},
             {6, 4.5, 90}, {6.5, 6, 80}, {5, 6, 70},
             {4, 0, 70}, {4, 0, 60}, {5, 0, 70}, {5, 0, 70}, {8, 0, 80},
-            {5, 0, 40}, {9, 2.5, 80}, {6, 0, 60}, {5, 0, 70}, {10, 2.5, 80}};
+            {5, 0, 40}, {9, 2.5, 80}, {6, 0, 60}, {5, 0, 70}, {10, 2.5, 80},
+            {3, 3, 50}, {4, 4, 60}, {2.4, 3, 60}, {7, 3, 80}, {2, 4, 60}, {4, 3, 50}};
     private static final double[][] HS = {{3.5, 3.5, 160, 0, 0.2, 0}, {6, 5, 180, 0, 0.3, 0}, {7, 6, 160, 0, 0.2, 0},
             {3, 3, 220, 0, 0.4, 0}, {8, 4.5, 200, 0.2, 0.4, 0}, {9, 4.5, 220, 0, 0.8, 0}, {7, 0, 160, 0, 0, 0},
             {9, 4, 220, 0, 0.6, 0}, {14, 3.5, 200, 0.35, 1.6, 0}, {7, 5, 200, 0, 0.4, 0}, {10, 3, 220, 0, 0.3, 0},
             {6, 7, 180, 0, 0, 0}, {3.5, 0, 180, 0, 0, 0}, {3.5, 0, 180, 0, 0, 0}, {3, 2.5, 200, 0, 0, 0},
             {6, 5, 180, 0, 0, 0}, {10, 3, 200, 0.3, 0.5, 0}, {6, 0, 160, 0, 0, 0}, {10, 2.5, 200, 0.6, 0, 0},
-            {4, 2.2, 240, 0, 0, 0}, {0, 8, 400, 0, 0, 0}, {9, 2.5, 240, 0, 0, 0}};
+            {4, 2.2, 240, 0, 0, 0}, {0, 8, 400, 0, 0, 0}, {9, 2.5, 240, 0, 0, 0},
+            {11, 3, 160, 0.7, 0.3, 0}, {6, 3.5, 180, 0.2, 0.6, 0}, {9, 7, 180, 0, 0.2, 0}, {10, 4, 200, 0.4, 0.2, 0},
+            {6, 0, 200, 0, 0, 0}, {9, 3, 180, 0, 0.4, 0}};
     private static final double[][] AS = {{5, 10, 1200}, {6, 8, 1200}, {6, 3, 1200}, {3, 8, 1200},
             {22, 6, 1200}, {14, 14, 1200}, {4, 2.2, 1200}, {14, 18, 1200}, {14, 7, 1200},
             {10, 10, 1200}, {12, 10, 1200}, {10, 7, 1200},
             {5, 4, 1200}, {22, 12, 1200}, {6, 2.2, 1200}, {20, 20, 1200}, {28, 6, 1200},
-            {5, 16, 1200}, {26, 6, 1200}, {4, 5, 1200}, {0, 10, 1200}, {4, 6, 1200}};
-    private static final int[] CHARGE = {12, 12, 12, 14, 20, 24, 14, 20, 22, 18, 18, 14, 15, 13, 14, 14, 16, 16, 18, 18, 18, 18};
+            {5, 16, 1200}, {26, 6, 1200}, {4, 5, 1200}, {0, 10, 1200}, {4, 6, 1200},
+            {4, 10, 1000}, {16, 5, 1000}, {6, 4, 1000}, {12, 4, 1000}, {2.5, 8, 1000}, {6, 4, 1000}};
+    private static final int[] CHARGE = {12, 12, 12, 14, 20, 24, 14, 20, 22, 18, 18, 14, 15, 13, 14, 14, 16, 16, 18, 18, 18, 18,
+            14, 14, 12, 20, 10, 14};
 
     private static int idx(String t) {
         for (int i = 0; i < T.length; i++) {
@@ -181,7 +199,7 @@ public final class ArmoryMoves {
 
     /** Magic weapons use the element picked in the Grimoire (Arcane until one is picked). */
     public static void element(SkillCtx c) {
-        if (!has(c.in.type) || !"wand".equals(T[idx(c.in.type)][1])) {
+        if (!has(c.in.type) || !"wand".equals(T[idx(c.in.type)][1]) && !"fist_arcane".equals(c.in.type)) {
             return;
         }
         int e = Magic.element(c.p, 0);
@@ -411,6 +429,50 @@ public final class ArmoryMoves {
                     snd(c, "minecraft:entity.player.attack.knockback", 0.9F, 1.2F + k * 0.15F);
                 });
                 break;
+            case "fist_brawler":
+                repeat(0, 3, 2, k -> {
+                    Martial.pose(p, k == 0 ? Martial.POSE_JAB_L : Martial.POSE_JAB_R, 6);
+                    SkillShapes.cone(c, r, Math.toRadians(40), dmg, hit().push(k == 1 ? 0.9 : 0.05));
+                    Fx.at(c.w, Fx.IMPACT, c.el, p.posX + c.lx * 1.5, p.posY + 1.3, p.posZ + c.lz * 1.5, 0.7);
+                    snd(c, "minecraft:entity.player.attack.strong", 0.8F, 1.3F + k * 0.2F);
+                });
+                break;
+            case "fist_ironleg":
+                Martial.pose(p, Martial.POSE_KICK_R, 8);
+                SkillShapes.cone(c, r, Math.toRadians(30), dmg, hit().push(1.1));
+                fx(c, Fx.CRESCENT, c.el, px + c.lx, py + 0.6, pz + c.lz, c.lx, 0, c.lz, r * 0.7, 0.6, 6);
+                snd(c, "minecraft:entity.player.attack.knockback", 1.0F, 1.1F);
+                break;
+            case "fist_tiger":
+                repeat(0, 2, 3, k -> {
+                    slashFx(c, p.posX, p.posY + 1.0, p.posZ, dir(c, (k - 1) * 25), 1.6);
+                    for (EntityLivingBase t : SkillShapes.coneTargets(c, r, Math.toRadians(45))) {
+                        if (SkillShapes.damage(c, t, dmg, hit().noFx())) {
+                            bleed(t, 40);
+                        }
+                    }
+                    snd(c, "minecraft:entity.player.attack.weak", 0.9F, 1.5F + k * 0.1F);
+                });
+                break;
+            case "fist_stone":
+                for (EntityLivingBase t : SkillShapes.coneTargets(c, r, Math.toRadians(35))) {
+                    if (SkillShapes.damage(c, t, dmg, hit().push(0.5))) {
+                        effect(t, MobEffects.WEAKNESS, 80, 1);
+                    }
+                }
+                Fx.at(c.w, Fx.IMPACT, c.el, px + c.lx * 1.6, py + 1.2, pz + c.lz * 1.6, 1.0);
+                snd(c, "minecraft:entity.irongolem.attack", 0.8F, 1.3F);
+                break;
+            case "fist_palm":
+                SkillShapes.cone(c, r, Math.toRadians(40), dmg, hit().push(2.0));
+                fx(c, Fx.RING, c.el, px + c.lx * 1.5, py + 1.1, pz + c.lz * 1.5, c.lx, 0, c.lz, 1.2, 0, 6);
+                snd(c, "minecraft:entity.enderdragon.flap", 0.7F, 1.6F);
+                break;
+            case "fist_arcane":
+                SkillShapes.cone(c, r, Math.toRadians(40), dmg, hit().push(0.3));
+                Fx.at(c.w, Fx.EXPLOSION, c.el, px + c.lx * 1.6, py + 1.2, pz + c.lz * 1.6, 0.6);
+                snd(c, "minecraft:entity.firework.blast", 0.6F, 1.6F);
+                break;
             case "scythe":
                 fx(c, Fx.CRESCENT, c.el, px + c.lx, py + 0.9, pz + c.lz, c.lx, 0, c.lz, r * 0.9, 0.9, 8);
                 SkillShapes.cone(c, r, Math.toRadians(80), dmg, hit().push(0.3));
@@ -592,6 +654,57 @@ public final class ArmoryMoves {
                     shake(c, 10, 0.8F, 6);
                     snd(c, "minecraft:entity.irongolem.attack", 1.0F, 0.7F);
                 });
+                break;
+            case "fist_brawler":
+                Martial.pose(p, Martial.POSE_UPPERCUT, 10);
+                SkillShapes.cone(c, r, Math.toRadians(40), dmg, hit().lift(st[3]).push(st[4]).stagger());
+                Fx.at(c.w, Fx.EXPLOSION, c.el, px + c.lx * 1.5, py + 1.6, pz + c.lz * 1.5, 1.0);
+                shake(c, 8, 0.6F, 4);
+                snd(c, "minecraft:entity.player.attack.crit", 1.0F, 0.8F);
+                break;
+            case "fist_ironleg":
+                Martial.pose(p, Martial.POSE_SPIN, 14);
+                Fx.send(c.w, Fx.SPIN, c.el, px, py, pz, 0, 0, 0, r * 0.6, 0, 12, p.getEntityId());
+                repeat(0, 6, 2, k -> {
+                    SkillShapes.area(c, p.posX, p.posY, p.posZ, r, dmg, hit().lift(st[3]).push(st[4]).noFx());
+                    snd(c, "minecraft:entity.player.attack.sweep", 0.9F, 1.0F + k * 0.2F);
+                });
+                break;
+            case "fist_tiger": {
+                double go = Math.max(1.0, SkillShapes.freeDistance(p, c.lx, c.lz, r));
+                double v = SkillShapes.dashSpeed(p, go);
+                SkillShapes.launch(p, c.lx * v, 0.25, c.lz * v);
+                fx(c, Fx.DASH, c.el, px, py, pz, px + c.lx * go, py, pz + c.lz * go, 0, 0, 4);
+                Set<Integer> once = SkillShapes.set();
+                for (EntityLivingBase t : SkillShapes.lineTargets(c.w, new Vec3d(px, py + 1, pz), f, go + 1, 1.5)) {
+                    if (once.add(t.getEntityId()) && SkillShapes.damage(c, t, dmg, hit())) {
+                        bleed(t, 100);
+                    }
+                }
+                snd(c, "minecraft:entity.wolf.growl", 0.8F, 1.4F);
+                break;
+            }
+            case "fist_stone":
+                fx(c, Fx.RING, c.el, px, py + 0.1, pz, 0, 0, 0, r, 0, 6);
+                fx(c, Fx.DEBRIS, c.el, px, py, pz, 0, 0, 0, r * 0.4, 0, 8);
+                for (EntityLivingBase t : SkillShapes.around(c.w, px, py, pz, r)) {
+                    if (SkillShapes.damage(c, t, dmg, hit().lift(st[3]).push(st[4]))) {
+                        effect(t, MobEffects.SLOWNESS, 40, 4); // stunned
+                    }
+                }
+                shake(c, 10, 1.0F, 6);
+                snd(c, "minecraft:entity.generic.explode", 0.8F, 0.7F);
+                break;
+            case "fist_palm":
+                p.getEntityData().setLong("ua_parry_until", c.w.getTotalWorldTime() + 30);
+                p.getEntityData().setFloat("ua_parry_dmg", dmg);
+                Fx.on(p, Fx.AURA, c.el, 0.9, 0, 30);
+                snd(c, "minecraft:item.shield.block", 0.9F, 1.5F);
+                break;
+            case "fist_arcane":
+                Fx.at(c.w, Fx.EXPLOSION, c.el, px + c.lx, py + 1, pz + c.lz, 1.4);
+                SkillShapes.area(c, px + c.lx, py, pz + c.lz, r, dmg, hit().push(st[4]));
+                snd(c, "minecraft:entity.generic.explode", 0.6F, 1.4F);
                 break;
             case "gauntlets":
                 SkillShapes.cone(c, r, Math.toRadians(45), dmg, hit().lift(st[3]).push(st[4]));
@@ -880,6 +993,83 @@ public final class ArmoryMoves {
                 snd(c, "minecraft:entity.irongolem.attack", 1.0F, 0.6F);
                 break;
             }
+            case "fist_brawler": {
+                final EntityLivingBase t = target(c, R);
+                if (t == null) {
+                    break;
+                }
+                double dx = p.posX - t.posX, dz = p.posZ - t.posZ, d = Math.max(0.1, Math.sqrt(dx * dx + dz * dz));
+                p.setPositionAndUpdate(t.posX + dx / d * 1.3, t.posY, t.posZ + dz / d * 1.3);
+                repeat(2, 3, 6, k -> {
+                    Martial.pose(p, k == 5 ? Martial.POSE_HOOK : k % 2 == 0 ? Martial.POSE_JAB_L : Martial.POSE_JAB_R, k == 5 ? 10 : 4);
+                    if (!t.isDead) {
+                        SkillShapes.damage(c, t, k == 5 ? per * 2 : per, k == 5 ? hit().push(2.2).lift(0.4) : hit().noFx());
+                        Fx.at(c.w, Fx.IMPACT, c.el, t.posX, t.posY + t.height * 0.6, t.posZ, k == 5 ? 1.4 : 0.6);
+                        snd(c, "minecraft:entity.player.attack.strong", 0.8F, 1.0F + k * 0.1F);
+                    }
+                });
+                break;
+            }
+            case "fist_ironleg":
+                Martial.pose(p, Martial.POSE_SKYDROP, 26);
+                SkillShapes.launch(p, p.motionX, 1.15, p.motionZ);
+                snd(c, "minecraft:entity.enderdragon.flap", 0.8F, 1.2F);
+                schedule(16, () -> {
+                    SkillShapes.launch(p, 0, -1.6, 0);
+                    p.fallDistance = 0;
+                });
+                schedule(22, () -> {
+                    p.fallDistance = 0;
+                    fx(c, Fx.RING, c.el, p.posX, p.posY + 0.1, p.posZ, 0, 0, 0, R, 0, 8);
+                    fx(c, Fx.DEBRIS, c.el, p.posX, p.posY, p.posZ, 0, 0, 0, R * 0.4, 0, 8);
+                    SkillShapes.area(c, p.posX, p.posY, p.posZ, R, per, hit().lift(0.5).push(0.6));
+                    shake(c, 14, 1.2F, 6);
+                    snd(c, "minecraft:entity.generic.explode", 1.0F, 0.8F);
+                });
+                break;
+            case "fist_tiger":
+                effect(p, MobEffects.HASTE, 120, 3);
+                effect(p, MobEffects.SPEED, 120, 1);
+                p.getEntityData().setLong("ua_tiger_until", c.w.getTotalWorldTime() + 120);
+                Fx.on(p, Fx.AURA, c.el, 0.9, 0, 120);
+                for (EntityLivingBase t : SkillShapes.around(c.w, px, py, pz, R)) {
+                    if (SkillShapes.damage(c, t, per, hit().push(0.3))) {
+                        bleed(t, 80);
+                    }
+                }
+                snd(c, "minecraft:entity.wolf.growl", 1.0F, 0.7F);
+                break;
+            case "fist_stone":
+                effect(p, MobEffects.RESISTANCE, 120, 1);
+                p.getEntityData().setLong("ua_stone_until", c.w.getTotalWorldTime() + 120);
+                Fx.on(p, Fx.AURA, c.el, 1.0, 0, 120);
+                fx(c, Fx.RING, c.el, px, py + 0.1, pz, 0, 0, 0, R, 0, 6);
+                SkillShapes.area(c, px, py, pz, R, per, hit().lift(0.3).push(0.5));
+                shake(c, 10, 0.8F, 5);
+                snd(c, "minecraft:block.anvil.land", 0.7F, 0.6F);
+                break;
+            case "fist_palm": {
+                final EntityLivingBase t = target(c, R);
+                if (t == null) {
+                    break;
+                }
+                repeat(0, 3, 12, k -> {
+                    if (!t.isDead) {
+                        SkillShapes.damage(c, t, per, k == 11 ? hit().push(2.5) : hit().noFx());
+                        p.heal(0.5F);
+                        Fx.at(c.w, Fx.IMPACT, c.el, t.posX, t.posY + t.height * 0.6, t.posZ, 0.5);
+                        snd(c, "minecraft:entity.player.attack.weak", 0.7F, 1.2F + k * 0.04F);
+                    }
+                });
+                break;
+            }
+            case "fist_arcane":
+                p.getEntityData().setLong("ua_avatar_until", c.w.getTotalWorldTime() + 160);
+                Fx.on(p, Fx.AURA, c.el, 1.0, 0, 160);
+                Fx.at(c.w, Fx.NOVA, c.el, px, py + 1, pz, 1.6);
+                SkillShapes.area(c, px, py, pz, R, per, hit().push(0.5));
+                snd(c, "minecraft:entity.evocation_illager.cast_spell", 0.9F, 1.2F);
+                break;
             case "gauntlets":
                 repeat(0, 6, 3, k -> {
                     double rr = 3 + k * 2;

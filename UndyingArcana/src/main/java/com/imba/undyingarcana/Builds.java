@@ -47,7 +47,7 @@ public final class Builds {
         "Undying: a killing blow leaves you at 1 health, 3 s immune, heal 30% (every 3 min)",
         "Overcharge: every 4th wand skill is free and twice the size",
         "Bloodrage: up to +50% damage as your health drops; kills heal 5%",
-        "Weapon Master: a skill within 3 s of switching weapon type deals +40%",
+        "Weapon Master: switch weapon type, land 2 hits: next skill +40% (8 s)",
         "Shadowstep: after a dodge your next hit crits and zombies lose you",
         "Bastion: sneak to brace: -60% damage from the front, taunts zombies in 8 blocks",
         "Jackpot: 10% of crits deal x3 and burst gold; elites drop extra loot",

@@ -10,13 +10,13 @@
       "item": "minecraft:gold_ingot"
     },
     "C": {
-      "item": "undyingarcana:soul_coin"
+      "item": "minecraft:emerald"
     },
     "O": {
       "item": "minecraft:obsidian"
     },
     "E": {
-      "item": "minecraft:emerald"
+      "item": "minecraft:diamond"
     }
   },
   "result": {

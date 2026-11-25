@@ -32,7 +32,17 @@ public class PowerHud {
         ClientRegistry.registerKeyBinding(awakenKey);
     }
 
+    /** "+N" coin pop-up (amount and time of the last gain). */
+    static int coinPop;
+    static long coinPopAt;
+
     public static void receive(SkillNet.MsgPower m) {
+        RelicClient.receive(m);
+        if (data != null && m.coins > data.coins) {
+            coinPop = m.coins - data.coins + (System.currentTimeMillis() - coinPopAt < 1500 ? coinPop : 0);
+            coinPopAt = System.currentTimeMillis();
+        }
+        Coins.clientBalance = m.coins;
         data = m;
         receivedAt = System.currentTimeMillis();
     }
@@ -93,6 +103,23 @@ public class PowerHud {
         int w = sr.getScaledWidth(), h = sr.getScaledHeight();
         FontRenderer fr = mc.fontRenderer;
         float secs = (System.currentTimeMillis() - receivedAt) / 1000.0F;
+        // ---- "+N" coins, rising beside the crosshair for 1.5 s
+        long pop = System.currentTimeMillis() - coinPopAt;
+        if (coinPop > 0 && pop < 1500) {
+            float t = pop / 1500F;
+            int alpha = Math.max(8, Math.round(255 * (1 - t * t)));
+            String s = "+" + coinPop;
+            int px = w / 2 + 12, py = Math.round(h / 2 - 12 - 10 * t);
+            GlStateManager.enableBlend();
+            GlStateManager.pushMatrix();
+            GlStateManager.translate(px, py, 0);
+            GlStateManager.scale(0.5F, 0.5F, 1F);
+            net.minecraft.client.renderer.RenderHelper.enableGUIStandardItemLighting();
+            mc.getRenderItem().renderItemAndEffectIntoGUI(new net.minecraft.item.ItemStack(ModItems.SOUL_COIN), 0, 0);
+            net.minecraft.client.renderer.RenderHelper.disableStandardItemLighting();
+            GlStateManager.popMatrix();
+            fr.drawStringWithShadow(s, px + 10, py, 0xFFD050 | alpha << 24);
+        }
         // ---- left of the hotbar: awakening line and mana bar
         int right = w / 2 - 91 - 6;
         if (mc.player.getPrimaryHand() == EnumHandSide.RIGHT && !mc.player.getHeldItemOffhand().isEmpty()) {
@@ -158,8 +185,8 @@ public class PowerHud {
                 }
                 // ring pips on the right edge, bottom up: how many rings the spell can charge (lit = built)
                 int built = SpellKeys.chargeSlot == i ? SpellKeys.rings() : 0;
-                for (int r = 0; r < Math.min(5, s.rings); r++) {
-                    int py = by + 18 - r * 4;
+                for (int r = 0; r < Math.min(6, s.rings); r++) {
+                    int py = by + 18 - r * 3; // up to 6 pips inside the 22 px slot
                     UiKit.rect(bx + 19, py, bx + 21, py + 2, r < built ? 0xFF000000 | col : 0x90FFFFFF & 0x90A0A0A0);
                 }
                 int cd = Math.max(0, d.spellCd[i] - Math.round(secs * 20));

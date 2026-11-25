@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "undyingarcana:boss_sigils",
+  "ingredients": [
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "minecraft:blaze_rod"
+    },
+    {
+      "item": "minecraft:blaze_rod"
+    },
+    {
+      "item": "minecraft:magma_cream"
+    },
+    {
+      "item": "minecraft:nether_wart"
+    }
+  ],
+  "result": {
+    "item": "undyingarcana:sigil_infernal_brute"
+  }
+}

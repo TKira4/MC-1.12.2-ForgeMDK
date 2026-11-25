@@ -13,6 +13,9 @@ public class CommonProxy {
     public void onFx(SkillNet.MsgFx msg) {
     }
 
+    public void onPose(SkillNet.MsgPose msg) {
+    }
+
     public void onShake(SkillNet.MsgShake msg) {
     }
 
@@ -26,6 +29,9 @@ public class CommonProxy {
     }
 
     public void onQuestProg(SkillNet.MsgQuestProg msg) {
+    }
+
+    public void onEcon(SkillNet.MsgEcon msg) {
     }
 
     public void onOpen(SkillNet.MsgOpen msg) {

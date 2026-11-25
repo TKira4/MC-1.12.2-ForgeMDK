@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "undyingarcana:boss_sigils",
+  "ingredients": [
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "undyingarcana:relic_shard"
+    },
+    {
+      "item": "minecraft:ender_pearl"
+    },
+    {
+      "item": "minecraft:ender_pearl"
+    },
+    {
+      "item": "minecraft:obsidian"
+    },
+    {
+      "item": "minecraft:ender_eye"
+    }
+  ],
+  "result": {
+    "item": "undyingarcana:sigil_void_stalker"
+  }
+}

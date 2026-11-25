@@ -71,6 +71,12 @@ public final class Quests {
                     }
                 }
             }
+            // mod-side fixes to default quests (loaded last, so they replace the same ids); rewritten every start
+            try (InputStream in = Quests.class.getResourceAsStream("/assets/undyingarcana/quests/overrides.json")) {
+                if (in != null) {
+                    Files.copy(in, new File(dir, "zz_ua_overrides.json").toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
             Map<String, QuestDefs.Quest> all = new LinkedHashMap<>();
             File[] files = dir.listFiles((d, n) -> n.endsWith(".json"));
             java.util.Arrays.sort(files);
@@ -231,6 +237,10 @@ public final class Quests {
             }
         }
         ResourceLocation key = EntityList.getKey(e);
+        // "miniboss": a boss, a Zombie Warlord, or any enemy tagged ua_miniboss (faction captains)
+        if ("miniboss".equals(target) && (e instanceof EntityLSBoss || e.getTags().contains("ua_warlord") || e.getTags().contains("ua_miniboss"))) {
+            return true;
+        }
         if (e instanceof EntityLSBoss) {
             if ("boss".equals(target)) {
                 return true;
@@ -395,6 +405,10 @@ public final class Quests {
         for (String spec : q.items) {
             ItemStack s = parseStack(spec);
             if (s.isEmpty()) {
+                continue;
+            }
+            if (s.getItem() == ModItems.SOUL_COIN && Stats.on(p.world)) {
+                Coins.add(p, s.getCount()); // coins are a balance now
                 continue;
             }
             if (!p.inventory.addItemStackToInventory(s) && !s.isEmpty()) {
